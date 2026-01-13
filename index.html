@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rick's Scanner</title>
+    <title>AR Product Scanner</title>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <style>
         body {
@@ -30,45 +30,42 @@
 </head>
 <body>
 
-    <h2>Target: 53790547</h2>
+    <h2>Scan Product Barcode</h2>
     <div id="reader"></div>
-    <p id="status">Scanning for barcode...</p>
+    <p id="status">Looking for barcode: 53790547...</p>
 
     <script>
         const onScanSuccess = (decodedText, decodedResult) => {
             console.log(`Scan result: ${decodedText}`, decodedResult);
 
-            // CHECK: Is this the specific barcode we want?
+            // CHECK: Is this the specific barcode (53790547)?
             if (decodedText === "53790547") {
                 
                 // 1. Update UI to show success
-                document.getElementById('status').innerText = "Target Acquired! Redirecting...";
-                document.getElementById('status').style.color = "#0f0";
+                document.getElementById('status').innerText = "Product Found! Launching AR...";
+                document.getElementById('status').style.color = "#0f0"; // Green text
 
-                // 2. Stop the camera
+                // 2. Stop the camera immediately
                 html5QrcodeScanner.clear();
 
-                // 3. Play the video
-                // Note: We use window.location to go to YouTube directly.
+                // 3. Redirect to the Mattercraft/WebXR link
                 setTimeout(() => {
-                    window.location.href = "https://youtu.be/xvFZjo5PgG0?si=WAWw2kTK2F7cNlT7";
-                }, 1000); // Small 1-second delay so user sees "Success" message
+                    window.location.href = "https://webxr.run/ker7JJ7XwzzRw";
+                }, 800); // Slight delay so user sees "Product Found!"
             } 
             else {
-                // Optional: Tell user they scanned the wrong thing
                 document.getElementById('status').innerText = `Scanned: ${decodedText} (Not the target)`;
             }
         };
 
         const onScanFailure = (error) => {
-            // Keep silent to avoid console spam
+            // checking...
         };
 
-        // CONFIGURATION: Turn on Barcode support
+        // CONFIGURATION: Support Barcodes
         const config = { 
             fps: 10, 
-            qrbox: { width: 250, height: 150 }, // Rectangular box fits barcodes better
-            // IMPORTANT: This tells the library to support standard Barcodes (1D)
+            qrbox: { width: 250, height: 150 },
             formatsToSupport: [ 
                 Html5QrcodeSupportedFormats.EAN_8,
                 Html5QrcodeSupportedFormats.EAN_13,
