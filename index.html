@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nutrition Tracker v10.0 (Gemini 2.5)</title>
+    <title>Nutrition Tracker v10.1 (Gemini 2.5 Flash)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -105,7 +105,7 @@
         <div class="header-top">
             <div>
                 <h1 class="header-title" id="page-title">Today</h1>
-                <div class="version-tag">Health AR v10.0 (2.5 Flash)</div>
+                <div class="version-tag">Health AR v10.1 (Gemini 2.5 Flash)</div>
             </div>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
         </div>
@@ -159,8 +159,6 @@
     
     // UPDATED: Using 'gemini-2.5-flash'
     // This is the fastest, stable 2.5 model with higher rate limits than 'Pro'.
-    // If you REALLY want the heavy-duty model (stricter limits), change this to:
-    // "gemini-2.5-pro"
     const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
     const AR_LINKS = {
