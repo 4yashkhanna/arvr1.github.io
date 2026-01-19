@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nutrition Tracker v8.5</title>
+    <title>Nutrition Tracker v8.6</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -77,7 +77,7 @@
         .camera-overlay-ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 20px; }
         .scan-box { width: 250px; height: 250px; border: 2px solid rgba(255,255,255,0.8); border-radius: 20px; margin-top: 100px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.6); }
         .camera-controls { pointer-events: auto; display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; padding-bottom: 50px; }
-        #camera-status { color: white; background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 20px; font-size: 14px; min-height: 24px; text-align: center; }
+        #camera-status { color: white; background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 20px; font-size: 14px; min-height: 24px; text-align: center; max-width: 80%; }
         
         /* Snap Button */
         #snap-action-btn { width: 80px; height: 80px; border-radius: 50%; background: white; border: 4px solid rgba(255,255,255,0.5); cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
@@ -104,7 +104,7 @@
         <div class="header-top">
             <div>
                 <h1 class="header-title" id="page-title">Today</h1>
-                <div class="version-tag">Health AR v8.5 (Snap & Review)</div>
+                <div class="version-tag">Health AR v8.6 (Debug Mode)</div>
             </div>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
         </div>
@@ -158,7 +158,8 @@
     const API_KEY = "AIzaSyDGeKD4AEq7kLZGsilAhWHuQgpUv8BBIUs".trim();
     // -------------------------------------------------------------
 
-    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+    // Using 'gemini-1.5-flash-latest' to ensure we get the latest stable version
+    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
 
     const AR_LINKS = {
         "protein bar": "https://webxr.run/lM6m6w8LA5QYw",
@@ -247,10 +248,9 @@
 
     // Step 3: Analyze
     async function analyzePhoto() {
-        // Show loading state on the confirm button
         confirmIcon.style.display = 'none';
         spinner.style.display = 'block';
-        statusText.innerText = "Analyzing...";
+        statusText.innerText = "AI Analyzing...";
         statusText.style.color = "#22c55e";
 
         try {
@@ -271,33 +271,34 @@
 
             if (!response.ok) {
                  const errData = await response.json();
-                 throw new Error(errData.error?.message || "API Error");
+                 // This will now show the detailed error from Google
+                 throw new Error(errData.error?.message || "Server Error " + response.status);
             }
 
             const data = await response.json();
             let keyword = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase();
 
             if (keyword) {
-                if(keyword === 'unknown') {
+                if(keyword.includes('unknown') || keyword.length > 20) {
                     statusText.innerText = "Not food. Try again."; 
-                    statusText.style.color = "red"; 
-                    setTimeout(() => {
-                        resetUI(); // Go back to camera after error
-                    }, 2000);
+                    statusText.style.color = "#ef4444"; 
+                    setTimeout(() => { resetUI(); }, 2000);
                 } else {
                     statusText.innerText = `Found: ${keyword.toUpperCase()}`;
                     const target = AR_LINKS[keyword] || AR_LINKS["default"];
-                    window.location.href = target; 
+                    setTimeout(() => { window.location.href = target; }, 500);
                 }
-            } else { throw new Error("No text returned"); }
+            } else { throw new Error("AI returned nothing"); }
 
         } catch (error) {
             console.error(error);
-            statusText.innerText = "Err: " + error.message.substring(0, 15);
-            statusText.style.color = "red";
+            // Print the actual error to the screen so we can debug
+            statusText.innerText = "Err: " + error.message; 
+            statusText.style.color = "#ef4444";
+            statusText.style.fontSize = "10px"; // Make it small enough to fit
             setTimeout(() => {
                 resetUI();
-            }, 2000);
+            }, 4000);
         }
     }
 
@@ -306,6 +307,7 @@
         canvas.style.display = 'none';
         statusText.innerText = "Point at food & snap";
         statusText.style.color = "white";
+        statusText.style.fontSize = "14px";
         snapBtn.style.display = 'flex';
         reviewControls.style.display = 'none';
         confirmIcon.style.display = 'block';
