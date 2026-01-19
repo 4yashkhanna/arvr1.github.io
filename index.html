@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nutrition Tracker v6.0 (No Timer)</title>
+    <title>Nutrition Tracker v7.0 (Accuracy Mode)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -92,7 +92,7 @@
         <div class="header-top">
             <div>
                 <h1 class="header-title" id="page-title">Today</h1>
-                <div class="version-tag">Health AR Scanner v6.0</div>
+                <div class="version-tag">Health AR Scanner v7.0</div>
             </div>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
         </div>
@@ -214,15 +214,13 @@
         snapBtn.disabled = true; snapInner.style.display = "none"; spinner.style.display = "block";
         statusText.innerText = "Analyzing..."; statusText.style.color = "#22c55e"; 
 
-        // NO TIMER - WE WAIT FOREVER IF NEEDED
-        
         try {
             const context = canvas.getContext('2d');
             canvas.width = video.videoWidth; canvas.height = video.videoHeight;
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
             const base64Image = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
 
-            // CALL API
+            // CALL API (NO TIMEOUT)
             const response = await fetch(`${API_URL}?key=${API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
