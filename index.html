@@ -126,7 +126,8 @@
      * CONFIGURATION
      * =========================================
      */
-    const API_KEY = "AIzaSyDGeKD4AEq7kLZGsilAhWHuQgpUv8BBIUs"; 
+    // I added .trim() to your key to automatically remove any hidden spaces!
+    const API_KEY = "AIzaSyDGeKD4AEq7kLZGsilAhWHuQgpUv8BBIUs".trim(); 
     const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
     // --- YOUR CUSTOM LINKS ARE HERE ---
@@ -209,6 +210,8 @@
         const context = canvas.getContext('2d');
         canvas.width = video.videoWidth; canvas.height = video.videoHeight;
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Convert to Base64 (Quality 0.6 to avoid payload too large errors)
         const base64Image = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
 
         try {
@@ -225,7 +228,14 @@
                 })
             });
 
-            if (!response.ok) throw new Error(`API Error: ${response.status}`);
+            if (!response.ok) {
+                // READ THE ERROR MESSAGE FROM GOOGLE
+                const errData = await response.json();
+                console.error("Full Error:", errData);
+                const msg = errData.error?.message || "Unknown API Error";
+                throw new Error(msg);
+            }
+
             const data = await response.json();
             let keyword = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase();
 
@@ -238,7 +248,11 @@
                 }
             } else { throw new Error("No text returned"); }
         } catch (error) {
-            console.error(error); statusText.innerText = error.message; statusText.style.color = "red"; resetBtn();
+            console.error(error); 
+            // SHOW THE REAL ERROR ON THE SCREEN
+            statusText.innerText = error.message.substring(0, 35) + "..."; 
+            statusText.style.color = "red"; 
+            resetBtn();
         }
     }
     function resetBtn() { snapBtn.disabled = false; snapInner.style.display = "block"; spinner.style.display = "none"; }
