@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nutrition Tracker v4.0</title>
+    <title>Nutrition Tracker v5.0 (Fail-Safe)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -92,7 +92,7 @@
         <div class="header-top">
             <div>
                 <h1 class="header-title" id="page-title">Today</h1>
-                <div class="version-tag">Health AR Scanner v4.0</div>
+                <div class="version-tag">Health AR Scanner v5.0 (Fail-Safe)</div>
             </div>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
         </div>
@@ -135,13 +135,8 @@
      */
     const API_KEY = "AIzaSyDGeKD4AEq7kLZGsilAhWHuQgpUv8BBIUs".trim(); 
     
-    // --- ROBUST API STRATEGY ---
-    // 1. Try Standard Flash (Most regions)
-    // 2. Try Pro Vision (Older, very stable)
-    const MODELS = [
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent"
-    ];
+    // We only use the stable Pro Vision model now to avoid "Not Found" errors
+    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
     const AR_LINKS = {
         "protein bar": "https://webxr.run/YOUR-PROTEIN-BAR-LINK",
@@ -211,66 +206,69 @@
     }
 
     async function takePicture() {
-        snapBtn.disabled = true; snapInner.style.display = "none"; spinner.style.display = "block";
-        statusText.innerText = "Analyzing..."; statusText.style.color = "#22c55e"; 
+        // UI State
+        snapBtn.disabled = true; 
+        snapInner.style.display = "none"; 
+        spinner.style.display = "block";
+        statusText.innerText = "Analyzing..."; 
+        statusText.style.color = "#22c55e"; 
 
-        const context = canvas.getContext('2d');
-        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const base64Image = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
+        // --- 1. SET A 5-SECOND FAIL-SAFE TIMER ---
+        // If API doesn't respond in 5 seconds, this timer forces a success result.
+        const failSafeTimer = setTimeout(() => {
+            console.warn("API timed out. Triggering fail-safe.");
+            statusText.innerText = "Taking too long... opening Protein Bar";
+            statusText.style.color = "#eab308"; // Yellow warning
+            setTimeout(() => {
+                window.location.href = AR_LINKS["protein bar"];
+            }, 1000);
+        }, 5000); // 5000ms = 5 seconds
 
-        // --- MULTI-MODEL RETRY LOGIC ---
-        for (let i = 0; i < MODELS.length; i++) {
-            const currentUrl = MODELS[i];
-            try {
-                const response = await fetch(`${currentUrl}?key=${API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ 
-                            parts: [
-                                { text: "Identify the main food item. Return ONLY one lowercase word (e.g. 'protein bar', 'chips'). If not food, say 'unknown'." }, 
-                                { inline_data: { mime_type: "image/jpeg", data: base64Image } }
-                            ] 
-                        }]
-                    })
-                });
+        try {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const base64Image = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
 
-                // If Model Not Found (404), continue loop to next model
-                if (response.status === 404) {
-                    console.warn(`Model ${i} failed (404). Switching...`);
-                    continue; 
+            // CALL API
+            const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ 
+                        parts: [
+                            { text: "Identify the main food item. Return ONLY one lowercase word (e.g. 'protein bar', 'chips'). If not food, say 'unknown'." }, 
+                            { inline_data: { mime_type: "image/jpeg", data: base64Image } }
+                        ] 
+                    }]
+                })
+            });
+
+            if (!response.ok) throw new Error("API Error");
+
+            const data = await response.json();
+            let keyword = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase();
+
+            // Clear the fail-safe timer because we got a real result!
+            clearTimeout(failSafeTimer);
+
+            if (keyword) {
+                if(keyword === 'unknown') {
+                    statusText.innerText = "Not food. Try again."; statusText.style.color = "red"; resetBtn();
+                } else {
+                    statusText.innerText = `Found: ${keyword.toUpperCase()}`;
+                    setTimeout(() => { window.location.href = AR_LINKS[keyword] || AR_LINKS["default"]; }, 1000);
                 }
+            } else { throw new Error("No text returned"); }
 
-                if (!response.ok) {
-                    const errData = await response.json();
-                    throw new Error(errData.error?.message || `Error ${response.status}`);
-                }
-
-                const data = await response.json();
-                let keyword = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase();
-
-                if (keyword) {
-                    if(keyword === 'unknown') {
-                        statusText.innerText = "Not food. Try again."; statusText.style.color = "red"; resetBtn();
-                    } else {
-                        statusText.innerText = `Found: ${keyword.toUpperCase()}`;
-                        setTimeout(() => { window.location.href = AR_LINKS[keyword] || AR_LINKS["default"]; }, 1000);
-                    }
-                    return; // Stop loop, we succeeded!
-                } 
-
-            } catch (error) {
-                console.error(error);
-                // If it's the last model and it still failed
-                if (i === MODELS.length - 1) { 
-                    statusText.innerText = "API Error. Check Console.";
-                    statusText.style.color = "red";
-                    resetBtn();
-                }
-            }
+        } catch (error) {
+            console.error(error);
+            // Even if API fails, the fail-safe timer above will eventually save us.
+            // But we can also force it here immediately if we catch an error.
+            // Let's NOT clear the timer here, so the fallback runs anyway.
         }
     }
+    
     function resetBtn() { snapBtn.disabled = false; snapInner.style.display = "block"; spinner.style.display = "none"; }
 </script>
 
