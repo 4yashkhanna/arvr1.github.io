@@ -20,17 +20,26 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        body { background-color: #e5e5e5; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
-        .app-container { width: 100%; max-width: 390px; height: 100vh; max-height: 844px; background-color: var(--bg-gray); overflow: hidden; position: relative; display: flex; flex-direction: column; }
+
+        body {
+            background-color: #e5e5e5;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; overflow: hidden;
+        }
+
+        /* Mobile Container */
+        .app-container {
+            width: 100%; max-width: 390px; height: 100vh; max-height: 844px;
+            background-color: var(--bg-gray); border-radius: 0; overflow: hidden;
+            position: relative; display: flex; flex-direction: column;
+        }
         @media (min-width: 400px) { .app-container { height: 844px; border-radius: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); } }
-        
+
+        /* UI Styles */
         header { padding: 40px 20px 10px 20px; background: var(--bg-gray); z-index: 10; }
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .header-title { font-size: 24px; font-weight: 700; color: var(--text-dark); }
-        .content { flex: 1; overflow-y: auto; padding: 0 20px 100px 20px; scrollbar-width: none; }
-        .content::-webkit-scrollbar { display: none; }
-        
-        /* UI Components */
+        .content { flex: 1; overflow-y: auto; padding: 0 20px 100px 20px; scrollbar-width: none; } .content::-webkit-scrollbar { display: none; }
         .card { background: var(--white); border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
         .stats-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .stat-item { text-align: center; } .stat-val { font-size: 18px; font-weight: 700; } .stat-label { font-size: 10px; color: var(--text-gray); text-transform: uppercase; }
@@ -53,7 +62,7 @@
         .fire-icon { font-size: 32px; margin-bottom: 10px; display: block; } .streak-count { font-size: 36px; font-weight: 800; }
         .profile-header { text-align: center; margin-bottom: 25px; } .avatar { width: 80px; height: 80px; background: #86efac; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 30px; color: white; }
 
-        /* Navigation */
+        /* Nav */
         .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 85px; background: var(--white); display: flex; justify-content: space-around; align-items: flex-start; padding-top: 15px; box-shadow: 0 -10px 30px rgba(0,0,0,0.03); z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #9ca3af; font-size: 10px; font-weight: 600; cursor: pointer; width: 50px; }
         .nav-item i { font-size: 20px; margin-bottom: 5px; transition: color 0.2s; } .nav-item.active { color: var(--primary-green); }
@@ -79,19 +88,14 @@
 
 <div class="app-container">
     <header id="main-header">
-        <div class="header-top">
-            <h1 class="header-title" id="page-title">Today</h1>
-            <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
-        </div>
+        <div class="header-top"><h1 class="header-title" id="page-title">Today</h1><i class="fa-regular fa-calendar" style="font-size: 20px;"></i></div>
         <div id="date-scroller" style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-gray); font-weight: 600;">
             <div style="text-align: center;">Mon<br>15</div><div style="text-align: center;">Tue<br>16</div><div style="text-align: center;">Wed<br>17</div>
             <div style="text-align: center; color: var(--white); background: var(--primary-green); padding: 5px 10px; border-radius: 12px;">Thu<br>18</div>
             <div style="text-align: center;">Fri<br>19</div><div style="text-align: center;">Sat<br>20</div><div style="text-align: center;">Sun<br>21</div>
         </div>
     </header>
-
     <div class="content" id="content-area"></div>
-
     <nav class="bottom-nav">
         <div class="nav-item active" onclick="switchTab('home')"><i class="fa-solid fa-house"></i><span>Home</span></div>
         <div class="nav-item" onclick="switchTab('snaps')"><i class="fa-solid fa-camera-retro"></i><span>Snaps</span></div>
@@ -125,27 +129,24 @@
     const API_KEY = "AIzaSyDGeKD4AEq7kLZGsilAhWHuQgpUv8BBIUs"; 
     const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
-    // --- MAP KEYWORDS TO YOUR SPECIFIC AR LINKS HERE ---
+    // --- YOUR CUSTOM LINKS ARE HERE ---
     const AR_LINKS = {
-        // AI Keyword     :   Link to Open
-        
-        // 1. Protein Bar (Covering multiple AI guesses)
-        "bar":      "https://webxr.run/ker7JJ7XwzzRw",
-        "protein":  "https://webxr.run/ker7JJ7XwzzRw",
-        "wrapper":  "https://webxr.run/ker7JJ7XwzzRw",
-        "snack":    "https://webxr.run/ker7JJ7XwzzRw",
-        
-        // 2. Chips (Covering multiple AI guesses)
-        "chips":    "https://webxr.run/YOUR_CHIPS_LINK_HERE", // <--- PASTE CHIPS LINK
-        "bag":      "https://webxr.run/YOUR_CHIPS_LINK_HERE", // <--- PASTE CHIPS LINK
-        "doritos":  "https://webxr.run/YOUR_CHIPS_LINK_HERE", // <--- PASTE CHIPS LINK
-        
-        // 3. Others (Optional)
-        "apple":    "https://webxr.run/apple-link",
-        "default":  "https://webxr.run/default-link"
+        // Protein Bar & Synonyms
+        "protein bar": "https://webxr.run/YOUR-PROTEIN-BAR-LINK",
+        "granola bar": "https://webxr.run/YOUR-PROTEIN-BAR-LINK", 
+        "bar": "https://webxr.run/YOUR-PROTEIN-BAR-LINK",
+
+        // Chips & Synonyms
+        "chips": "https://webxr.run/YOUR-CHIPS-LINK",
+        "potato chips": "https://webxr.run/YOUR-CHIPS-LINK",
+        "doritos": "https://webxr.run/YOUR-CHIPS-LINK",
+        "snack": "https://webxr.run/YOUR-CHIPS-LINK",
+
+        // Default Fallback
+        "default": "https://webxr.run/default-link"
     };
 
-    // --- APP CONTENT ---
+    // --- APP DATA ---
     const data = {
         home: `
             <div class="stats-container"><div class="stat-item"><span class="stat-val">1450</span><br><span class="stat-label">Consumed</span></div>
@@ -163,10 +164,10 @@
         profile: `<div class="profile-header"><div class="avatar">AJ</div><h2>Alex Johnson</h2></div><div class="card"><h4>Settings</h4><p>Vegetarian Mode: ON</p></div>`
     };
 
+    // --- NAV LOGIC ---
     const contentArea = document.getElementById('content-area');
     const pageTitle = document.getElementById('page-title');
     const navItems = document.querySelectorAll('.nav-item');
-
     function switchTab(tabName) {
         contentArea.innerHTML = data[tabName];
         navItems.forEach(item => item.classList.remove('active'));
@@ -190,10 +191,8 @@
 
     async function openCamera() {
         cameraView.style.display = 'flex';
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-            video.srcObject = stream;
-        } catch (err) { statusText.innerText = "Camera Denied. Check settings."; console.error(err); }
+        try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); video.srcObject = stream; } 
+        catch (err) { statusText.innerText = "Camera Denied."; }
     }
 
     function closeCamera() {
@@ -217,12 +216,16 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: "Identify the main food item. Return ONLY the one-word name in lowercase (e.g. 'burger', 'apple', 'pasta'). If not food, say 'unknown'.", inline_data: { mime_type: "image/jpeg", data: base64Image } }] }]
+                    contents: [{ 
+                        parts: [
+                            { text: "Identify the main food item in this image. Return ONLY the one-word name in lowercase (e.g. 'burger', 'apple', 'protein bar', 'chips'). If not food, say 'unknown'." }, 
+                            { inline_data: { mime_type: "image/jpeg", data: base64Image } }
+                        ] 
+                    }]
                 })
             });
 
             if (!response.ok) throw new Error(`API Error: ${response.status}`);
-            
             const data = await response.json();
             let keyword = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase();
 
@@ -231,23 +234,14 @@
                     statusText.innerText = "Not food. Try again."; statusText.style.color = "red"; resetBtn();
                 } else {
                     statusText.innerText = `Found: ${keyword.toUpperCase()}`;
-                    setTimeout(() => { 
-                        // Default to the protein bar link if the AI guesses a synonym for bar/chips
-                        const targetLink = AR_LINKS[keyword] || AR_LINKS["default"]; 
-                        window.location.href = targetLink; 
-                    }, 1000);
+                    setTimeout(() => { window.location.href = AR_LINKS[keyword] || AR_LINKS["default"]; }, 1000);
                 }
-            } else { throw new Error("No text returned from AI"); }
-
+            } else { throw new Error("No text returned"); }
         } catch (error) {
-            console.error(error);
-            statusText.innerText = error.message; statusText.style.color = "red"; resetBtn();
+            console.error(error); statusText.innerText = error.message; statusText.style.color = "red"; resetBtn();
         }
     }
-
-    function resetBtn() {
-        snapBtn.disabled = false; snapInner.style.display = "block"; spinner.style.display = "none";
-    }
+    function resetBtn() { snapBtn.disabled = false; snapInner.style.display = "block"; spinner.style.display = "none"; }
 </script>
 
 </body>
