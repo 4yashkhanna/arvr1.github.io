@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nutrition Tracker v8.8</title>
+    <title>Nutrition Tracker v9.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -104,7 +104,7 @@
         <div class="header-top">
             <div>
                 <h1 class="header-title" id="page-title">Today</h1>
-                <div class="version-tag">Health AR v8.8 (Model 2.0)</div>
+                <div class="version-tag">Health AR v9.0 (Gemini 2.0)</div>
             </div>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
         </div>
@@ -155,8 +155,7 @@
 <script>
     const API_KEY = "AIzaSyDGeKD4AEq7kLZGsilAhWHuQgpUv8BBIUs".trim();
     
-    // UPDATED: Trying Gemini 2.0 Flash Experimental. 
-    // If this specific model name is wrong, it will likely return a 404 or 400 error.
+    // UPDATED: Forced use of Gemini 2.0 Flash Experimental
     const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent";
 
     const AR_LINKS = {
@@ -248,7 +247,7 @@
     async function analyzePhoto() {
         confirmIcon.style.display = 'none';
         spinner.style.display = 'block';
-        statusText.innerText = "2.0 Flash Analyzing...";
+        statusText.innerText = "Gemini 2.0 Analyzing...";
         statusText.style.color = "#22c55e";
 
         try {
