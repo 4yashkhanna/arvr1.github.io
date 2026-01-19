@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nutrition Tracker v5.0 (Fail-Safe)</title>
+    <title>Nutrition Tracker v5.1</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -92,7 +92,7 @@
         <div class="header-top">
             <div>
                 <h1 class="header-title" id="page-title">Today</h1>
-                <div class="version-tag">Health AR Scanner v5.0 (Fail-Safe)</div>
+                <div class="version-tag">Health AR Scanner v5.1</div>
             </div>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
         </div>
@@ -135,17 +135,22 @@
      */
     const API_KEY = "AIzaSyDGeKD4AEq7kLZGsilAhWHuQgpUv8BBIUs".trim(); 
     
-    // We only use the stable Pro Vision model now to avoid "Not Found" errors
+    // API ENDPOINT
     const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
+    // --- LINKS (UPDATED FOR PROTEIN BAR) ---
     const AR_LINKS = {
-        "protein bar": "https://webxr.run/YOUR-PROTEIN-BAR-LINK",
-        "granola bar": "https://webxr.run/YOUR-PROTEIN-BAR-LINK", 
-        "bar": "https://webxr.run/YOUR-PROTEIN-BAR-LINK",
+        "protein bar": "https://webxr.run/lM6m6w8LA5QYw",
+        "granola bar": "https://webxr.run/lM6m6w8LA5QYw", 
+        "bar": "https://webxr.run/lM6m6w8LA5QYw",
+        
+        // Chips (Placeholder - update if you have a link)
         "chips": "https://webxr.run/YOUR-CHIPS-LINK",
         "potato chips": "https://webxr.run/YOUR-CHIPS-LINK",
         "doritos": "https://webxr.run/YOUR-CHIPS-LINK",
         "snack": "https://webxr.run/YOUR-CHIPS-LINK",
+
+        // Default
         "default": "https://webxr.run/default-link"
     };
 
@@ -206,23 +211,18 @@
     }
 
     async function takePicture() {
-        // UI State
-        snapBtn.disabled = true; 
-        snapInner.style.display = "none"; 
-        spinner.style.display = "block";
-        statusText.innerText = "Analyzing..."; 
-        statusText.style.color = "#22c55e"; 
+        snapBtn.disabled = true; snapInner.style.display = "none"; spinner.style.display = "block";
+        statusText.innerText = "Analyzing..."; statusText.style.color = "#22c55e"; 
 
-        // --- 1. SET A 5-SECOND FAIL-SAFE TIMER ---
-        // If API doesn't respond in 5 seconds, this timer forces a success result.
+        // --- FAIL SAFE TIMER (5s) ---
         const failSafeTimer = setTimeout(() => {
             console.warn("API timed out. Triggering fail-safe.");
             statusText.innerText = "Taking too long... opening Protein Bar";
-            statusText.style.color = "#eab308"; // Yellow warning
+            statusText.style.color = "#eab308"; 
             setTimeout(() => {
                 window.location.href = AR_LINKS["protein bar"];
             }, 1000);
-        }, 5000); // 5000ms = 5 seconds
+        }, 5000); 
 
         try {
             const context = canvas.getContext('2d');
@@ -249,7 +249,7 @@
             const data = await response.json();
             let keyword = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase();
 
-            // Clear the fail-safe timer because we got a real result!
+            // Clear the fail-safe because we got a result
             clearTimeout(failSafeTimer);
 
             if (keyword) {
@@ -257,15 +257,17 @@
                     statusText.innerText = "Not food. Try again."; statusText.style.color = "red"; resetBtn();
                 } else {
                     statusText.innerText = `Found: ${keyword.toUpperCase()}`;
-                    setTimeout(() => { window.location.href = AR_LINKS[keyword] || AR_LINKS["default"]; }, 1000);
+                    setTimeout(() => { 
+                        // Link lookup
+                        const target = AR_LINKS[keyword] || AR_LINKS["default"];
+                        window.location.href = target; 
+                    }, 1000);
                 }
             } else { throw new Error("No text returned"); }
 
         } catch (error) {
             console.error(error);
-            // Even if API fails, the fail-safe timer above will eventually save us.
-            // But we can also force it here immediately if we catch an error.
-            // Let's NOT clear the timer here, so the fallback runs anyway.
+            // Let the fail-safe handle the redirect if API fails.
         }
     }
     
