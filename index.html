@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nutrition Tracker v4.1</title>
+    <title>Nutrition Tracker v8.1</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -82,7 +82,7 @@
         #close-camera-btn { position: absolute; top: 20px; right: 20px; color: white; font-size: 24px; background: rgba(0,0,0,0.3); width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; pointer-events: auto; z-index: 10000; }
         .spinner { border: 4px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top: 4px solid var(--primary-green); width: 30px; height: 30px; animation: spin 1s linear infinite; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .version-tag { font-size: 10px; color: var(--text-gray); margin-top: 5px; opacity: 0.7; }
+        .version-tag { font-size: 10px; color: var(--text-gray); margin-top: 5px; opacity: 0.7; font-weight: bold;}
     </style>
 </head>
 <body>
@@ -92,7 +92,7 @@
         <div class="header-top">
             <div>
                 <h1 class="header-title" id="page-title">Today</h1>
-                <div class="version-tag">Health AR Scanner v4.1 (Restored)</div>
+                <div class="version-tag">Health AR v8.1 (Instant)</div>
             </div>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
         </div>
@@ -129,55 +129,29 @@
 </div>
 
 <script>
-    /** * =========================================
-     * CONFIGURATION
-     * =========================================
-     */
     const API_KEY = "AIzaSyDGeKD4AEq7kLZGsilAhWHuQgpUv8BBIUs".trim(); 
-    
-    // --- ROBUST API STRATEGY ---
-    // 1. Try Standard Flash (Most regions)
-    // 2. Try Pro Vision (Older, very stable)
-    const MODELS = [
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent"
-    ];
+    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
     const AR_LINKS = {
-        // --- SPECIFIC LINKS YOU REQUESTED ---
         "protein bar": "https://webxr.run/lM6m6w8LA5QYw",
         "granola bar": "https://webxr.run/lM6m6w8LA5QYw", 
         "bar": "https://webxr.run/lM6m6w8LA5QYw",
         
-        // Chips (Placeholder)
         "chips": "https://webxr.run/YOUR-CHIPS-LINK",
         "potato chips": "https://webxr.run/YOUR-CHIPS-LINK",
         "doritos": "https://webxr.run/YOUR-CHIPS-LINK",
         "snack": "https://webxr.run/YOUR-CHIPS-LINK",
 
-        // Default
         "default": "https://webxr.run/default-link"
     };
 
-    // --- APP DATA ---
     const data = {
-        home: `
-            <div class="stats-container"><div class="stat-item"><span class="stat-val">1450</span><br><span class="stat-label">Consumed</span></div>
-            <div class="circle-progress"><div class="circle-inner"><span class="percentage">78%</span><span class="clean-label">CLEAN</span></div></div>
-            <div class="stat-item"><span class="stat-val">320</span><br><span class="stat-label">Active</span></div></div>
-            <div class="insight-card"><i class="fa-solid fa-wand-magic-sparkles insight-icon"></i><div class="insight-text"><h4>Today's Insight</h4><p>Mostly clean choices. Keep it up!</p></div></div>
-            <div class="card"><h3 style="margin-bottom: 15px;">Macros</h3>
-            <div class="macro-row"><div class="macro-header"><span>Protein</span><span>68g</span></div><div class="macro-bar-bg"><div class="macro-bar-fill bg-blue" style="width: 56%"></div></div></div>
-            <div class="macro-row"><div class="macro-header"><span>Carbs</span><span>145g</span></div><div class="macro-bar-bg"><div class="macro-bar-fill bg-orange" style="width: 72%"></div></div></div></div>
-            <div class="list-header"><h3>Recent Scans</h3></div>
-            <div class="scan-item"><img src="https://images.unsplash.com/photo-1517618998059-4d640245b736?w=100" class="scan-img"><div class="scan-info"><div class="scan-name">Granola Bar</div><div class="scan-time">8:30 AM</div></div><div class="scan-badge badge-clean">Clean</div></div>
-        `,
+        home: `<div class="stats-container"><div class="stat-item"><span class="stat-val">1450</span><br><span class="stat-label">Consumed</span></div><div class="circle-progress"><div class="circle-inner"><span class="percentage">78%</span><span class="clean-label">CLEAN</span></div></div><div class="stat-item"><span class="stat-val">320</span><br><span class="stat-label">Active</span></div></div><div class="insight-card"><i class="fa-solid fa-wand-magic-sparkles insight-icon"></i><div class="insight-text"><h4>Today's Insight</h4><p>Mostly clean choices. Keep it up!</p></div></div><div class="card"><h3 style="margin-bottom: 15px;">Macros</h3><div class="macro-row"><div class="macro-header"><span>Protein</span><span>68g</span></div><div class="macro-bar-bg"><div class="macro-bar-fill bg-blue" style="width: 56%"></div></div></div><div class="macro-row"><div class="macro-header"><span>Carbs</span><span>145g</span></div><div class="macro-bar-bg"><div class="macro-bar-fill bg-orange" style="width: 72%"></div></div></div></div><div class="list-header"><h3>Recent Scans</h3></div><div class="scan-item"><img src="https://images.unsplash.com/photo-1517618998059-4d640245b736?w=100" class="scan-img"><div class="scan-info"><div class="scan-name">Granola Bar</div><div class="scan-time">8:30 AM</div></div><div class="scan-badge badge-clean">Clean</div></div>`,
         snaps: `<h4 style="color:#6b7280; padding:20px 0;">Your Food History</h4><div style="text-align:center;">Snap more food to see history!</div>`,
         streaks: `<div class="streak-hero"><i class="fa-solid fa-fire fire-icon"></i><div class="streak-count">6-day</div><div>streak!</div></div>`,
         profile: `<div class="profile-header"><div class="avatar">AJ</div><h2>Alex Johnson</h2></div><div class="card"><h4>Settings</h4><p>Vegetarian Mode: ON</p></div>`
     };
 
-    // --- NAV LOGIC ---
     const contentArea = document.getElementById('content-area');
     const pageTitle = document.getElementById('page-title');
     const navItems = document.querySelectorAll('.nav-item');
@@ -192,7 +166,6 @@
     }
     switchTab('home');
 
-    // --- CAMERA LOGIC ---
     const cameraView = document.getElementById('camera-view');
     const video = document.getElementById('camera-feed');
     const canvas = document.getElementById('camera-canvas');
@@ -217,69 +190,56 @@
 
     async function takePicture() {
         snapBtn.disabled = true; snapInner.style.display = "none"; spinner.style.display = "block";
-        statusText.innerText = "Analyzing..."; statusText.style.color = "#22c55e"; 
+        
+        statusText.innerText = "Asking AI (Wait)..."; 
+        statusText.style.color = "#22c55e"; 
 
-        // NO TIMER - ACCURACY MODE
+        try {
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const base64Image = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
 
-        const context = canvas.getContext('2d');
-        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const base64Image = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
+            const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ 
+                        parts: [
+                            { text: "Identify the main food item. Return ONLY one lowercase word (e.g. 'protein bar', 'chips'). If not food, say 'unknown'." }, 
+                            { inline_data: { mime_type: "image/jpeg", data: base64Image } }
+                        ] 
+                    }]
+                })
+            });
 
-        // --- MULTI-MODEL RETRY LOGIC ---
-        for (let i = 0; i < MODELS.length; i++) {
-            const currentUrl = MODELS[i];
-            try {
-                const response = await fetch(`${currentUrl}?key=${API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ 
-                            parts: [
-                                { text: "Identify the main food item. Return ONLY one lowercase word (e.g. 'protein bar', 'chips'). If not food, say 'unknown'." }, 
-                                { inline_data: { mime_type: "image/jpeg", data: base64Image } }
-                            ] 
-                        }]
-                    })
-                });
-
-                if (response.status === 404) {
-                    console.warn(`Model ${i} failed (404). Switching...`);
-                    continue; 
-                }
-
-                if (!response.ok) {
-                    const errData = await response.json();
-                    throw new Error(errData.error?.message || `Error ${response.status}`);
-                }
-
-                const data = await response.json();
-                let keyword = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase();
-
-                if (keyword) {
-                    if(keyword === 'unknown') {
-                        statusText.innerText = "Not food. Try again."; statusText.style.color = "red"; resetBtn();
-                    } else {
-                        statusText.innerText = `Found: ${keyword.toUpperCase()}`;
-                        setTimeout(() => { 
-                             const target = AR_LINKS[keyword] || AR_LINKS["default"];
-                             window.location.href = target; 
-                        }, 1000);
-                    }
-                    return; // Stop loop, we succeeded!
-                } 
-
-            } catch (error) {
-                console.error(error);
-                // If it's the last model and it still failed
-                if (i === MODELS.length - 1) { 
-                    statusText.innerText = "API Error. Check Console.";
-                    statusText.style.color = "red";
-                    resetBtn();
-                }
+            if (!response.ok) {
+                 const errData = await response.json();
+                 throw new Error(errData.error?.message || "API Error");
             }
+
+            const data = await response.json();
+            let keyword = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase();
+
+            if (keyword) {
+                if(keyword === 'unknown') {
+                    statusText.innerText = "Not food. Try again."; statusText.style.color = "red"; resetBtn();
+                } else {
+                    statusText.innerText = `Found: ${keyword.toUpperCase()}`;
+                    // TIMEOUT REMOVED HERE - Instant Redirect
+                    const target = AR_LINKS[keyword] || AR_LINKS["default"];
+                    window.location.href = target; 
+                }
+            } else { throw new Error("No text returned"); }
+
+        } catch (error) {
+            console.error(error);
+            statusText.innerText = "Error: " + error.message.substring(0, 20);
+            statusText.style.color = "red";
+            resetBtn();
         }
     }
+    
     function resetBtn() { snapBtn.disabled = false; snapInner.style.display = "block"; spinner.style.display = "none"; }
 </script>
 
