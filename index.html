@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nutrition Tracker v10.1 (Gemini 2.5 Flash)</title>
+    <title>Nutrition Tracker (Stable 1.5)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -105,7 +105,7 @@
         <div class="header-top">
             <div>
                 <h1 class="header-title" id="page-title">Today</h1>
-                <div class="version-tag">Health AR v10.1 (Gemini 2.5 Flash)</div>
+                <div class="version-tag">Health AR v10.1 (Stable)</div>
             </div>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
         </div>
@@ -155,12 +155,14 @@
 </div>
 
 <script>
+    // YOUR KEY (Inserted)
     const API_KEY = "AIzaSyDsiI1TOEl7YzhLz5w6rpG_i1rOzF4YfqM";
     
-    // UPDATED: Using 'gemini-2.5-flash'
-    // This is the fastest, stable 2.5 model with higher rate limits than 'Pro'.
-    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+    // SWITCHED TO GEMINI 1.5 FLASH
+    // This is the model with 15 RPM limits (much better than 2.0 Free Tier)
+    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
+    // UPDATED LINKS
     const AR_LINKS = {
         "protein bar": "https://webxr.run/lM6m6w8LA5QYw",
         "granola bar": "https://webxr.run/lM6m6w8LA5QYw", 
@@ -248,7 +250,7 @@
         if(isLocked) return;
         confirmIcon.style.display = 'none';
         spinner.style.display = 'block';
-        statusText.innerText = "Asking Gemini 2.5...";
+        statusText.innerText = "Scanning (Flash 1.5)...";
         statusText.style.color = "#22c55e";
 
         try {
