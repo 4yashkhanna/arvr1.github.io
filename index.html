@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nutrition Tracker v9.8 (Flash 2.0)</title>
+    <title>Nutrition Tracker v10.0 (Gemini 2.5)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -90,6 +90,7 @@
         .btn-retake { background: #ef4444; }
         .btn-confirm { background: #22c55e; }
         .btn-confirm:active, .btn-retake:active { transform: scale(0.95); }
+        .btn-confirm.disabled { opacity: 0.5; pointer-events: none; background: #6b7280; }
 
         #close-camera-btn { position: absolute; top: 20px; right: 20px; color: white; font-size: 24px; background: rgba(0,0,0,0.3); width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; pointer-events: auto; z-index: 10000; }
         .spinner { border: 4px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top: 4px solid var(--white); width: 30px; height: 30px; animation: spin 1s linear infinite; display: none; }
@@ -104,7 +105,7 @@
         <div class="header-top">
             <div>
                 <h1 class="header-title" id="page-title">Today</h1>
-                <div class="version-tag">Health AR v9.8 (Flash 2.0 Stable)</div>
+                <div class="version-tag">Health AR v10.0 (2.5 Flash)</div>
             </div>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
         </div>
@@ -142,9 +143,10 @@
                 <div class="review-btn btn-retake" onclick="retakePhoto()">
                     <i class="fa-solid fa-rotate-left"></i>
                 </div>
-                <div class="review-btn btn-confirm" onclick="analyzePhoto()">
+                <div class="review-btn btn-confirm" id="confirm-btn" onclick="analyzePhoto()">
                     <i class="fa-solid fa-check" id="confirm-icon"></i>
                     <div class="spinner" id="analyze-spinner"></div>
+                    <span id="countdown-text" style="font-size: 10px; display: none;"></span>
                 </div>
             </div>
 
@@ -153,13 +155,13 @@
 </div>
 
 <script>
-    // -------------------------------------------------------------
-    // YOUR KEY (Inserted)
     const API_KEY = "AIzaSyDsiI1TOEl7YzhLz5w6rpG_i1rOzF4YfqM";
     
-    // UPDATED: Using 'gemini-2.0-flash' (Stable, non-experimental)
-    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
-    // -------------------------------------------------------------
+    // UPDATED: Using 'gemini-2.5-flash'
+    // This is the fastest, stable 2.5 model with higher rate limits than 'Pro'.
+    // If you REALLY want the heavy-duty model (stricter limits), change this to:
+    // "gemini-2.5-pro"
+    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
     const AR_LINKS = {
         "protein bar": "https://webxr.run/lM6m6w8LA5QYw",
@@ -201,9 +203,12 @@
     const statusText = document.getElementById('camera-status');
     const snapBtn = document.getElementById('snap-action-btn');
     const reviewControls = document.getElementById('review-controls');
+    const confirmBtn = document.getElementById('confirm-btn');
     const confirmIcon = document.getElementById('confirm-icon');
     const spinner = document.getElementById('analyze-spinner');
+    const countdownText = document.getElementById('countdown-text');
     let stream = null;
+    let isLocked = false;
 
     async function openCamera() {
         cameraView.style.display = 'flex';
@@ -220,25 +225,20 @@
         if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; }
     }
 
-    // Step 1: Freeze Frame
     function snapPhoto() {
         const context = canvas.getContext('2d');
         canvas.width = video.videoWidth; 
         canvas.height = video.videoHeight;
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        // Hide Video, Show Canvas (Freeze)
         video.style.display = 'none';
         canvas.style.display = 'block';
-
-        // Update UI
         statusText.innerText = "Analyze this?";
         snapBtn.style.display = 'none';
         reviewControls.style.display = 'flex';
     }
 
-    // Step 2: Retake (Back to live)
     function retakePhoto() {
+        if(isLocked) return;
         video.style.display = 'block';
         canvas.style.display = 'none';
         statusText.innerText = "Point at food & snap";
@@ -246,11 +246,11 @@
         reviewControls.style.display = 'none';
     }
 
-    // Step 3: Analyze
     async function analyzePhoto() {
+        if(isLocked) return;
         confirmIcon.style.display = 'none';
         spinner.style.display = 'block';
-        statusText.innerText = "Checking Gemini 2.0 Flash...";
+        statusText.innerText = "Asking Gemini 2.5...";
         statusText.style.color = "#22c55e";
 
         try {
@@ -272,16 +272,13 @@
             if (!response.ok) {
                  const errData = await response.json();
                  
-                 // DEBUG: Specific Error Handling
-                 console.error("API Error Full:", errData);
-                 const message = errData.error?.message || "Status " + response.status;
-                 
-                 if(message.includes("API key not valid") || response.status === 400) {
-                     alert("ERROR: API Key Blocked.\nReason: 'Browser Referrer Restriction'.\n\nFix: Go to Google Cloud Console > Credentials > Edit this Key > Set Application Restrictions to 'None'.");
-                 } else {
-                     alert("API Error: " + message);
+                 // Handle Rate Limit specifically
+                 if(response.status === 429) {
+                     startCooldown(60); // 60 second cooldown
+                     throw new Error("Speed Limit Reached");
                  }
-                 throw new Error(message);
+
+                 throw new Error(errData.error?.message || "Status " + response.status);
             }
 
             const data = await response.json();
@@ -301,16 +298,44 @@
 
         } catch (error) {
             console.error(error);
-            statusText.innerText = "Error. See Alert."; 
-            statusText.style.color = "#ef4444";
-            statusText.style.fontSize = "12px";
-            setTimeout(() => {
-                resetUI();
-            }, 5000);
+            if(error.message !== "Speed Limit Reached") {
+                statusText.innerText = "Error: " + error.message; 
+                statusText.style.color = "#ef4444";
+                statusText.style.fontSize = "12px";
+                setTimeout(() => { resetUI(); }, 4000);
+            }
         }
     }
 
+    function startCooldown(seconds) {
+        isLocked = true;
+        spinner.style.display = 'none';
+        confirmIcon.style.display = 'none';
+        countdownText.style.display = 'block';
+        confirmBtn.classList.add('disabled');
+        
+        statusText.innerText = "Quota Limit Hit. Please wait.";
+        statusText.style.color = "#eab308"; // Yellow caution color
+
+        let counter = seconds;
+        countdownText.innerText = counter + "s";
+
+        const interval = setInterval(() => {
+            counter--;
+            countdownText.innerText = counter + "s";
+            if(counter <= 0) {
+                clearInterval(interval);
+                resetUI();
+                isLocked = false;
+                confirmBtn.classList.remove('disabled');
+                countdownText.style.display = 'none';
+                confirmIcon.style.display = 'block';
+            }
+        }, 1000);
+    }
+
     function resetUI() {
+        if(isLocked) return;
         video.style.display = 'block';
         canvas.style.display = 'none';
         statusText.innerText = "Point at food & snap";
