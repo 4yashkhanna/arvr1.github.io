@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nutrition Tracker v9.7</title>
+    <title>Nutrition Tracker v9.8 (Flash 2.0)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -104,7 +104,7 @@
         <div class="header-top">
             <div>
                 <h1 class="header-title" id="page-title">Today</h1>
-                <div class="version-tag">Health AR v9.7 (Stable)</div>
+                <div class="version-tag">Health AR v9.8 (Flash 2.0 Stable)</div>
             </div>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
         </div>
@@ -154,14 +154,11 @@
 
 <script>
     // -------------------------------------------------------------
-    // KEY INSERTED BELOW. 
-    // IF THIS FAILS, YOUR KEY HAS RESTRICTIONS SET IN GOOGLE CLOUD.
+    // YOUR KEY (Inserted)
+    const API_KEY = "AIzaSyDsiI1TOEl7YzhLz5w6rpG_i1rOzF4YfqM";
     
-    const API_KEY = "AIzaSyDsiI1TOEl7YzhLz5w6rpG_i1rOzF4YfqM"; 
-    
-    // Using 1.5 Flash for maximum stability.
-    // If you MUST use 2.0, change to: "gemini-2.0-flash-exp"
-    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+    // UPDATED: Using 'gemini-2.0-flash' (Stable, non-experimental)
+    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
     // -------------------------------------------------------------
 
     const AR_LINKS = {
@@ -253,7 +250,7 @@
     async function analyzePhoto() {
         confirmIcon.style.display = 'none';
         spinner.style.display = 'block';
-        statusText.innerText = "Thinking...";
+        statusText.innerText = "Checking Gemini 2.0 Flash...";
         statusText.style.color = "#22c55e";
 
         try {
