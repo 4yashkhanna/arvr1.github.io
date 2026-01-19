@@ -104,7 +104,7 @@
         <div class="header-top">
             <div>
                 <h1 class="header-title" id="page-title">Today</h1>
-                <div class="version-tag">Health AR v9.2 (Stable 2.5)</div>
+                <div class="version-tag">Health AR v9.3 (Flash 2.0)</div>
             </div>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
         </div>
@@ -154,10 +154,11 @@
 
 <script>
     // -------------------------------------------------------------
+    // YOUR KEY (From your input)
     const API_KEY = "AIzaSyDGeKD4AEq7kLZGsilAhWHuQgpUv8BBIUs".trim();
     
-    // UPDATED: Using 'gemini-2.5-flash' which is the current stable release.
-    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+    // UPDATED: Using 'gemini-2.0-flash-exp' as requested
+    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent";
     // -------------------------------------------------------------
 
     const AR_LINKS = {
@@ -249,7 +250,7 @@
     async function analyzePhoto() {
         confirmIcon.style.display = 'none';
         spinner.style.display = 'block';
-        statusText.innerText = "2.5 Flash Analyzing...";
+        statusText.innerText = "Scanning...";
         statusText.style.color = "#22c55e";
 
         try {
@@ -270,6 +271,10 @@
 
             if (!response.ok) {
                  const errData = await response.json();
+                 // Specific handling for 429 Quota Exceeded
+                 if (response.status === 429) {
+                     throw new Error("Daily Limit Reached (429)");
+                 }
                  throw new Error(errData.error?.message || "Server Error " + response.status);
             }
 
@@ -290,10 +295,9 @@
 
         } catch (error) {
             console.error(error);
-            // DEBUG: Show error on screen to help fix
-            statusText.innerText = "Error: " + error.message; 
+            statusText.innerText = error.message; 
             statusText.style.color = "#ef4444";
-            statusText.style.fontSize = "10px";
+            statusText.style.fontSize = "12px";
             setTimeout(() => {
                 resetUI();
             }, 5000);
