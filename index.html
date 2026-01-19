@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nutrition Tracker v8.6</title>
+    <title>Nutrition Tracker v8.8</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -104,7 +104,7 @@
         <div class="header-top">
             <div>
                 <h1 class="header-title" id="page-title">Today</h1>
-                <div class="version-tag">Health AR v8.6 (Debug Mode)</div>
+                <div class="version-tag">Health AR v8.8 (Model 2.0)</div>
             </div>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
         </div>
@@ -153,13 +153,11 @@
 </div>
 
 <script>
-    // -------------------------------------------------------------
-    // IMPORTANT: REPLACE THIS WITH YOUR REAL API KEY
     const API_KEY = "AIzaSyDGeKD4AEq7kLZGsilAhWHuQgpUv8BBIUs".trim();
-    // -------------------------------------------------------------
-
-    // Using 'gemini-1.5-flash-latest' to ensure we get the latest stable version
-    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
+    
+    // UPDATED: Trying Gemini 2.0 Flash Experimental. 
+    // If this specific model name is wrong, it will likely return a 404 or 400 error.
+    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent";
 
     const AR_LINKS = {
         "protein bar": "https://webxr.run/lM6m6w8LA5QYw",
@@ -250,7 +248,7 @@
     async function analyzePhoto() {
         confirmIcon.style.display = 'none';
         spinner.style.display = 'block';
-        statusText.innerText = "AI Analyzing...";
+        statusText.innerText = "2.0 Flash Analyzing...";
         statusText.style.color = "#22c55e";
 
         try {
@@ -271,7 +269,6 @@
 
             if (!response.ok) {
                  const errData = await response.json();
-                 // This will now show the detailed error from Google
                  throw new Error(errData.error?.message || "Server Error " + response.status);
             }
 
@@ -292,13 +289,13 @@
 
         } catch (error) {
             console.error(error);
-            // Print the actual error to the screen so we can debug
-            statusText.innerText = "Err: " + error.message; 
+            // DEBUG: Show error on screen to help fix
+            statusText.innerText = "Error: " + error.message; 
             statusText.style.color = "#ef4444";
-            statusText.style.fontSize = "10px"; // Make it small enough to fit
+            statusText.style.fontSize = "10px";
             setTimeout(() => {
                 resetUI();
-            }, 4000);
+            }, 5000);
         }
     }
 
