@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nutrition Tracker v5.1</title>
+    <title>Nutrition Tracker v6.0 (No Timer)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -92,7 +92,7 @@
         <div class="header-top">
             <div>
                 <h1 class="header-title" id="page-title">Today</h1>
-                <div class="version-tag">Health AR Scanner v5.1</div>
+                <div class="version-tag">Health AR Scanner v6.0</div>
             </div>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
         </div>
@@ -214,16 +214,8 @@
         snapBtn.disabled = true; snapInner.style.display = "none"; spinner.style.display = "block";
         statusText.innerText = "Analyzing..."; statusText.style.color = "#22c55e"; 
 
-        // --- FAIL SAFE TIMER (5s) ---
-        const failSafeTimer = setTimeout(() => {
-            console.warn("API timed out. Triggering fail-safe.");
-            statusText.innerText = "Taking too long... opening Protein Bar";
-            statusText.style.color = "#eab308"; 
-            setTimeout(() => {
-                window.location.href = AR_LINKS["protein bar"];
-            }, 1000);
-        }, 5000); 
-
+        // NO TIMER - WE WAIT FOREVER IF NEEDED
+        
         try {
             const context = canvas.getContext('2d');
             canvas.width = video.videoWidth; canvas.height = video.videoHeight;
@@ -244,13 +236,13 @@
                 })
             });
 
-            if (!response.ok) throw new Error("API Error");
+            if (!response.ok) {
+                 const errData = await response.json();
+                 throw new Error(errData.error?.message || "API Error");
+            }
 
             const data = await response.json();
             let keyword = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase();
-
-            // Clear the fail-safe because we got a result
-            clearTimeout(failSafeTimer);
 
             if (keyword) {
                 if(keyword === 'unknown') {
@@ -267,7 +259,9 @@
 
         } catch (error) {
             console.error(error);
-            // Let the fail-safe handle the redirect if API fails.
+            statusText.innerText = "Error: " + error.message.substring(0, 20);
+            statusText.style.color = "red";
+            resetBtn();
         }
     }
     
