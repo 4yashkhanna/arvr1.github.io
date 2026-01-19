@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nutrition Tracker v3.0</title>
+    <title>Nutrition Tracker v4.0</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -92,7 +92,7 @@
         <div class="header-top">
             <div>
                 <h1 class="header-title" id="page-title">Today</h1>
-                <div class="version-tag">Health AR Scanner v3.0</div>
+                <div class="version-tag">Health AR Scanner v4.0</div>
             </div>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
         </div>
@@ -135,10 +135,12 @@
      */
     const API_KEY = "AIzaSyDGeKD4AEq7kLZGsilAhWHuQgpUv8BBIUs".trim(); 
     
-    // --- API STRATEGY: TRY MAIN, THEN FALLBACK ---
+    // --- ROBUST API STRATEGY ---
+    // 1. Try Standard Flash (Most regions)
+    // 2. Try Pro Vision (Older, very stable)
     const MODELS = [
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent" // Fallback
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-vision:generateContent"
     ];
 
     const AR_LINKS = {
@@ -217,7 +219,7 @@
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         const base64Image = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
 
-        // --- RETRY LOGIC (Try 1.5-flash, then fallback to pro-vision) ---
+        // --- MULTI-MODEL RETRY LOGIC ---
         for (let i = 0; i < MODELS.length; i++) {
             const currentUrl = MODELS[i];
             try {
@@ -227,16 +229,17 @@
                     body: JSON.stringify({
                         contents: [{ 
                             parts: [
-                                { text: "Identify the main food item. Return ONLY one lowercase word (e.g. 'burger', 'protein bar', 'chips'). If not food, say 'unknown'." }, 
+                                { text: "Identify the main food item. Return ONLY one lowercase word (e.g. 'protein bar', 'chips'). If not food, say 'unknown'." }, 
                                 { inline_data: { mime_type: "image/jpeg", data: base64Image } }
                             ] 
                         }]
                     })
                 });
 
+                // If Model Not Found (404), continue loop to next model
                 if (response.status === 404) {
-                    console.warn(`Model ${i} failed with 404. Trying next...`);
-                    continue; // Try next model in loop
+                    console.warn(`Model ${i} failed (404). Switching...`);
+                    continue; 
                 }
 
                 if (!response.ok) {
@@ -254,13 +257,14 @@
                         statusText.innerText = `Found: ${keyword.toUpperCase()}`;
                         setTimeout(() => { window.location.href = AR_LINKS[keyword] || AR_LINKS["default"]; }, 1000);
                     }
-                    return; // Success! Exit function.
+                    return; // Stop loop, we succeeded!
                 } 
 
             } catch (error) {
                 console.error(error);
-                if (i === MODELS.length - 1) { // If it was the last model
-                    statusText.innerText = "Connection Failed.";
+                // If it's the last model and it still failed
+                if (i === MODELS.length - 1) { 
+                    statusText.innerText = "API Error. Check Console.";
                     statusText.style.color = "red";
                     resetBtn();
                 }
