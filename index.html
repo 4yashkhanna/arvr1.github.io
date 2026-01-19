@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nutrition Tracker v8.4</title>
+    <title>Nutrition Tracker v8.5</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -72,18 +72,27 @@
         /* Camera Overlay */
         #camera-view { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; }
         #camera-view video { width: 100%; height: 100%; object-fit: cover; }
-        /* Canvas is used for the freeze-frame effect */
         #camera-canvas { width: 100%; height: 100%; object-fit: cover; display: none; } 
         
         .camera-overlay-ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 20px; }
         .scan-box { width: 250px; height: 250px; border: 2px solid rgba(255,255,255,0.8); border-radius: 20px; margin-top: 100px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.6); }
         .camera-controls { pointer-events: auto; display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; padding-bottom: 50px; }
         #camera-status { color: white; background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 20px; font-size: 14px; min-height: 24px; text-align: center; }
+        
+        /* Snap Button */
         #snap-action-btn { width: 80px; height: 80px; border-radius: 50%; background: white; border: 4px solid rgba(255,255,255,0.5); cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
         #snap-action-btn:active { transform: scale(0.9); }
         .snap-inner { width: 60px; height: 60px; background: var(--primary-green); border-radius: 50%; }
+
+        /* Review Buttons (Hidden by default) */
+        #review-controls { display: none; flex-direction: row; gap: 40px; }
+        .review-btn { width: 70px; height: 70px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .btn-retake { background: #ef4444; }
+        .btn-confirm { background: #22c55e; }
+        .btn-confirm:active, .btn-retake:active { transform: scale(0.95); }
+
         #close-camera-btn { position: absolute; top: 20px; right: 20px; color: white; font-size: 24px; background: rgba(0,0,0,0.3); width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; pointer-events: auto; z-index: 10000; }
-        .spinner { border: 4px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top: 4px solid var(--primary-green); width: 30px; height: 30px; animation: spin 1s linear infinite; display: none; }
+        .spinner { border: 4px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top: 4px solid var(--white); width: 30px; height: 30px; animation: spin 1s linear infinite; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .version-tag { font-size: 10px; color: var(--text-gray); margin-top: 5px; opacity: 0.7; font-weight: bold;}
     </style>
@@ -95,7 +104,7 @@
         <div class="header-top">
             <div>
                 <h1 class="header-title" id="page-title">Today</h1>
-                <div class="version-tag">Health AR v8.4 (Key Connected)</div>
+                <div class="version-tag">Health AR v8.5 (Snap & Review)</div>
             </div>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
         </div>
@@ -124,16 +133,31 @@
         <div class="scan-box"></div>
         <div class="camera-controls">
             <div id="camera-status">Point at food & snap</div>
-            <button id="snap-action-btn" onclick="takePicture()">
+            
+            <button id="snap-action-btn" onclick="snapPhoto()">
                 <div class="snap-inner"></div>
-                <div class="spinner"></div>
             </button>
+
+            <div id="review-controls">
+                <div class="review-btn btn-retake" onclick="retakePhoto()">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </div>
+                <div class="review-btn btn-confirm" onclick="analyzePhoto()">
+                    <i class="fa-solid fa-check" id="confirm-icon"></i>
+                    <div class="spinner" id="analyze-spinner"></div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
 
 <script>
+    // -------------------------------------------------------------
+    // IMPORTANT: REPLACE THIS WITH YOUR REAL API KEY
     const API_KEY = "AIzaSyDGeKD4AEq7kLZGsilAhWHuQgpUv8BBIUs".trim();
+    // -------------------------------------------------------------
+
     const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
     const AR_LINKS = {
@@ -169,21 +193,20 @@
     }
     switchTab('home');
 
+    // Camera Variables
     const cameraView = document.getElementById('camera-view');
     const video = document.getElementById('camera-feed');
     const canvas = document.getElementById('camera-canvas');
     const statusText = document.getElementById('camera-status');
     const snapBtn = document.getElementById('snap-action-btn');
-    const snapInner = document.querySelector('.snap-inner');
-    const spinner = document.querySelector('.spinner');
+    const reviewControls = document.getElementById('review-controls');
+    const confirmIcon = document.getElementById('confirm-icon');
+    const spinner = document.getElementById('analyze-spinner');
     let stream = null;
 
     async function openCamera() {
         cameraView.style.display = 'flex';
-        // Ensure video is visible and canvas is hidden when opening
-        video.style.display = 'block';
-        canvas.style.display = 'none';
-        
+        resetUI();
         try { 
             stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); 
             video.srcObject = stream; 
@@ -194,39 +217,43 @@
     function closeCamera() {
         cameraView.style.display = 'none';
         if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; }
-        
-        // Reset UI Elements
-        statusText.innerText = "Point at food & snap"; 
-        statusText.style.color = "white";
-        snapBtn.disabled = false; 
-        snapInner.style.display = "block"; 
-        spinner.style.display = "none";
-        
-        // Reset Video/Canvas state
-        video.style.display = 'block';
-        canvas.style.display = 'none';
     }
 
-    async function takePicture() {
-        snapBtn.disabled = true; 
-        snapInner.style.display = "none"; 
-        spinner.style.display = "block";
+    // Step 1: Freeze Frame
+    function snapPhoto() {
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth; 
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        statusText.innerText = "Processing Photo..."; 
-        statusText.style.color = "#22c55e"; 
+        // Hide Video, Show Canvas (Freeze)
+        video.style.display = 'none';
+        canvas.style.display = 'block';
+
+        // Update UI
+        statusText.innerText = "Analyze this?";
+        snapBtn.style.display = 'none';
+        reviewControls.style.display = 'flex';
+    }
+
+    // Step 2: Retake (Back to live)
+    function retakePhoto() {
+        video.style.display = 'block';
+        canvas.style.display = 'none';
+        statusText.innerText = "Point at food & snap";
+        snapBtn.style.display = 'flex';
+        reviewControls.style.display = 'none';
+    }
+
+    // Step 3: Analyze
+    async function analyzePhoto() {
+        // Show loading state on the confirm button
+        confirmIcon.style.display = 'none';
+        spinner.style.display = 'block';
+        statusText.innerText = "Analyzing...";
+        statusText.style.color = "#22c55e";
 
         try {
-            // 1. Capture the image to canvas
-            const context = canvas.getContext('2d');
-            canvas.width = video.videoWidth; 
-            canvas.height = video.videoHeight;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            // 2. FREEZE FRAME: Hide video, show canvas
-            video.style.display = 'none';
-            canvas.style.display = 'block';
-
-            // 3. Get image data for API
             const base64Image = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
 
             const response = await fetch(`${API_URL}?key=${API_KEY}`, {
@@ -244,7 +271,6 @@
 
             if (!response.ok) {
                  const errData = await response.json();
-                 console.error("API Error Full:", errData);
                  throw new Error(errData.error?.message || "API Error");
             }
 
@@ -255,7 +281,9 @@
                 if(keyword === 'unknown') {
                     statusText.innerText = "Not food. Try again."; 
                     statusText.style.color = "red"; 
-                    resetBtn();
+                    setTimeout(() => {
+                        resetUI(); // Go back to camera after error
+                    }, 2000);
                 } else {
                     statusText.innerText = `Found: ${keyword.toUpperCase()}`;
                     const target = AR_LINKS[keyword] || AR_LINKS["default"];
@@ -267,18 +295,21 @@
             console.error(error);
             statusText.innerText = "Err: " + error.message.substring(0, 15);
             statusText.style.color = "red";
-            resetBtn();
+            setTimeout(() => {
+                resetUI();
+            }, 2000);
         }
     }
-    
-    function resetBtn() { 
-        snapBtn.disabled = false; 
-        snapInner.style.display = "block"; 
-        spinner.style.display = "none"; 
-        
-        // On error or retry, show the live camera again
+
+    function resetUI() {
         video.style.display = 'block';
         canvas.style.display = 'none';
+        statusText.innerText = "Point at food & snap";
+        statusText.style.color = "white";
+        snapBtn.style.display = 'flex';
+        reviewControls.style.display = 'none';
+        confirmIcon.style.display = 'block';
+        spinner.style.display = 'none';
     }
 </script>
 
