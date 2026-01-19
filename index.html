@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nutrition Tracker v9.6 (Debug)</title>
+    <title>Nutrition Tracker v9.7</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -80,4 +80,251 @@
         #camera-status { color: white; background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 20px; font-size: 14px; min-height: 24px; text-align: center; max-width: 80%; }
         
         /* Snap Button */
-        #snap-action-btn { width: 80px; height: 80
+        #snap-action-btn { width: 80px; height: 80px; border-radius: 50%; background: white; border: 4px solid rgba(255,255,255,0.5); cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
+        #snap-action-btn:active { transform: scale(0.9); }
+        .snap-inner { width: 60px; height: 60px; background: var(--primary-green); border-radius: 50%; }
+
+        /* Review Buttons (Hidden by default) */
+        #review-controls { display: none; flex-direction: row; gap: 40px; }
+        .review-btn { width: 70px; height: 70px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .btn-retake { background: #ef4444; }
+        .btn-confirm { background: #22c55e; }
+        .btn-confirm:active, .btn-retake:active { transform: scale(0.95); }
+
+        #close-camera-btn { position: absolute; top: 20px; right: 20px; color: white; font-size: 24px; background: rgba(0,0,0,0.3); width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; pointer-events: auto; z-index: 10000; }
+        .spinner { border: 4px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top: 4px solid var(--white); width: 30px; height: 30px; animation: spin 1s linear infinite; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .version-tag { font-size: 10px; color: var(--text-gray); margin-top: 5px; opacity: 0.7; font-weight: bold;}
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header id="main-header">
+        <div class="header-top">
+            <div>
+                <h1 class="header-title" id="page-title">Today</h1>
+                <div class="version-tag">Health AR v9.7 (Stable)</div>
+            </div>
+            <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
+        </div>
+        <div id="date-scroller" style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-gray); font-weight: 600;">
+            <div style="text-align: center;">Mon<br>15</div><div style="text-align: center;">Tue<br>16</div><div style="text-align: center;">Wed<br>17</div>
+            <div style="text-align: center; color: var(--white); background: var(--primary-green); padding: 5px 10px; border-radius: 12px;">Thu<br>18</div>
+            <div style="text-align: center;">Fri<br>19</div><div style="text-align: center;">Sat<br>20</div><div style="text-align: center;">Sun<br>21</div>
+        </div>
+    </header>
+    <div class="content" id="content-area"></div>
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('home')"><i class="fa-solid fa-house"></i><span>Home</span></div>
+        <div class="nav-item" onclick="switchTab('snaps')"><i class="fa-solid fa-camera-retro"></i><span>Snaps</span></div>
+        <div class="nav-camera" onclick="openCamera()"><i class="fa-solid fa-camera"></i></div>
+        <div class="nav-item" onclick="switchTab('streaks')"><i class="fa-solid fa-arrow-trend-up"></i><span>Streaks</span></div>
+        <div class="nav-item" onclick="switchTab('profile')"><i class="fa-regular fa-user"></i><span>Profile</span></div>
+    </nav>
+</div>
+
+<div id="camera-view">
+    <video id="camera-feed" autoplay playsinline muted></video>
+    <canvas id="camera-canvas"></canvas>
+    
+    <div id="close-camera-btn" onclick="closeCamera()"><i class="fa-solid fa-xmark"></i></div>
+    <div class="camera-overlay-ui">
+        <div class="scan-box"></div>
+        <div class="camera-controls">
+            <div id="camera-status">Point at food & snap</div>
+            
+            <button id="snap-action-btn" onclick="snapPhoto()">
+                <div class="snap-inner"></div>
+            </button>
+
+            <div id="review-controls">
+                <div class="review-btn btn-retake" onclick="retakePhoto()">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </div>
+                <div class="review-btn btn-confirm" onclick="analyzePhoto()">
+                    <i class="fa-solid fa-check" id="confirm-icon"></i>
+                    <div class="spinner" id="analyze-spinner"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // -------------------------------------------------------------
+    // KEY INSERTED BELOW. 
+    // IF THIS FAILS, YOUR KEY HAS RESTRICTIONS SET IN GOOGLE CLOUD.
+    
+    const API_KEY = "AIzaSyDsiI1TOEl7YzhLz5w6rpG_i1rOzF4YfqM"; 
+    
+    // Using 1.5 Flash for maximum stability.
+    // If you MUST use 2.0, change to: "gemini-2.0-flash-exp"
+    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+    // -------------------------------------------------------------
+
+    const AR_LINKS = {
+        "protein bar": "https://webxr.run/lM6m6w8LA5QYw",
+        "granola bar": "https://webxr.run/lM6m6w8LA5QYw", 
+        "bar": "https://webxr.run/lM6m6w8LA5QYw",
+        "chips": "https://webxr.run/YOUR-CHIPS-LINK",
+        "potato chips": "https://webxr.run/YOUR-CHIPS-LINK",
+        "doritos": "https://webxr.run/YOUR-CHIPS-LINK",
+        "snack": "https://webxr.run/YOUR-CHIPS-LINK",
+        "default": "https://webxr.run/default-link"
+    };
+
+    const data = {
+        home: `<div class="stats-container"><div class="stat-item"><span class="stat-val">1450</span><br><span class="stat-label">Consumed</span></div><div class="circle-progress"><div class="circle-inner"><span class="percentage">78%</span><span class="clean-label">CLEAN</span></div></div><div class="stat-item"><span class="stat-val">320</span><br><span class="stat-label">Active</span></div></div><div class="insight-card"><i class="fa-solid fa-wand-magic-sparkles insight-icon"></i><div class="insight-text"><h4>Today's Insight</h4><p>Mostly clean choices. Keep it up!</p></div></div><div class="card"><h3 style="margin-bottom: 15px;">Macros</h3><div class="macro-row"><div class="macro-header"><span>Protein</span><span>68g</span></div><div class="macro-bar-bg"><div class="macro-bar-fill bg-blue" style="width: 56%"></div></div></div><div class="macro-row"><div class="macro-header"><span>Carbs</span><span>145g</span></div><div class="macro-bar-bg"><div class="macro-bar-fill bg-orange" style="width: 72%"></div></div></div></div><div class="list-header"><h3>Recent Scans</h3></div><div class="scan-item"><img src="https://images.unsplash.com/photo-1517618998059-4d640245b736?w=100" class="scan-img"><div class="scan-info"><div class="scan-name">Granola Bar</div><div class="scan-time">8:30 AM</div></div><div class="scan-badge badge-clean">Clean</div></div>`,
+        snaps: `<h4 style="color:#6b7280; padding:20px 0;">Your Food History</h4><div style="text-align:center;">Snap more food to see history!</div>`,
+        streaks: `<div class="streak-hero"><i class="fa-solid fa-fire fire-icon"></i><div class="streak-count">6-day</div><div>streak!</div></div>`,
+        profile: `<div class="profile-header"><div class="avatar">AJ</div><h2>Alex Johnson</h2></div><div class="card"><h4>Settings</h4><p>Vegetarian Mode: ON</p></div>`
+    };
+
+    const contentArea = document.getElementById('content-area');
+    const pageTitle = document.getElementById('page-title');
+    const navItems = document.querySelectorAll('.nav-item');
+    
+    function switchTab(tabName) {
+        contentArea.innerHTML = data[tabName];
+        navItems.forEach(item => item.classList.remove('active'));
+        if(tabName === 'home') navItems[0].classList.add('active');
+        if(tabName === 'snaps') navItems[1].classList.add('active');
+        if(tabName === 'streaks') navItems[2].classList.add('active');
+        if(tabName === 'profile') navItems[3].classList.add('active');
+        pageTitle.innerText = tabName.charAt(0).toUpperCase() + tabName.slice(1);
+    }
+    switchTab('home');
+
+    // Camera Variables
+    const cameraView = document.getElementById('camera-view');
+    const video = document.getElementById('camera-feed');
+    const canvas = document.getElementById('camera-canvas');
+    const statusText = document.getElementById('camera-status');
+    const snapBtn = document.getElementById('snap-action-btn');
+    const reviewControls = document.getElementById('review-controls');
+    const confirmIcon = document.getElementById('confirm-icon');
+    const spinner = document.getElementById('analyze-spinner');
+    let stream = null;
+
+    async function openCamera() {
+        cameraView.style.display = 'flex';
+        resetUI();
+        try { 
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); 
+            video.srcObject = stream; 
+        } 
+        catch (err) { statusText.innerText = "Camera Denied."; }
+    }
+
+    function closeCamera() {
+        cameraView.style.display = 'none';
+        if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; }
+    }
+
+    // Step 1: Freeze Frame
+    function snapPhoto() {
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth; 
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Hide Video, Show Canvas (Freeze)
+        video.style.display = 'none';
+        canvas.style.display = 'block';
+
+        // Update UI
+        statusText.innerText = "Analyze this?";
+        snapBtn.style.display = 'none';
+        reviewControls.style.display = 'flex';
+    }
+
+    // Step 2: Retake (Back to live)
+    function retakePhoto() {
+        video.style.display = 'block';
+        canvas.style.display = 'none';
+        statusText.innerText = "Point at food & snap";
+        snapBtn.style.display = 'flex';
+        reviewControls.style.display = 'none';
+    }
+
+    // Step 3: Analyze
+    async function analyzePhoto() {
+        confirmIcon.style.display = 'none';
+        spinner.style.display = 'block';
+        statusText.innerText = "Thinking...";
+        statusText.style.color = "#22c55e";
+
+        try {
+            const base64Image = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
+
+            const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ 
+                        parts: [
+                            { text: "Identify the main food item. Return ONLY one lowercase word (e.g. 'protein bar', 'chips'). If not food, say 'unknown'." }, 
+                            { inline_data: { mime_type: "image/jpeg", data: base64Image } }
+                        ] 
+                    }]
+                })
+            });
+
+            if (!response.ok) {
+                 const errData = await response.json();
+                 
+                 // DEBUG: Specific Error Handling
+                 console.error("API Error Full:", errData);
+                 const message = errData.error?.message || "Status " + response.status;
+                 
+                 if(message.includes("API key not valid") || response.status === 400) {
+                     alert("ERROR: API Key Blocked.\nReason: 'Browser Referrer Restriction'.\n\nFix: Go to Google Cloud Console > Credentials > Edit this Key > Set Application Restrictions to 'None'.");
+                 } else {
+                     alert("API Error: " + message);
+                 }
+                 throw new Error(message);
+            }
+
+            const data = await response.json();
+            let keyword = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase();
+
+            if (keyword) {
+                if(keyword.includes('unknown') || keyword.length > 20) {
+                    statusText.innerText = "Not food. Try again."; 
+                    statusText.style.color = "#ef4444"; 
+                    setTimeout(() => { resetUI(); }, 2000);
+                } else {
+                    statusText.innerText = `Found: ${keyword.toUpperCase()}`;
+                    const target = AR_LINKS[keyword] || AR_LINKS["default"];
+                    setTimeout(() => { window.location.href = target; }, 500);
+                }
+            } else { throw new Error("AI returned nothing"); }
+
+        } catch (error) {
+            console.error(error);
+            statusText.innerText = "Error. See Alert."; 
+            statusText.style.color = "#ef4444";
+            statusText.style.fontSize = "12px";
+            setTimeout(() => {
+                resetUI();
+            }, 5000);
+        }
+    }
+
+    function resetUI() {
+        video.style.display = 'block';
+        canvas.style.display = 'none';
+        statusText.innerText = "Point at food & snap";
+        statusText.style.color = "white";
+        statusText.style.fontSize = "14px";
+        snapBtn.style.display = 'flex';
+        reviewControls.style.display = 'none';
+        confirmIcon.style.display = 'block';
+        spinner.style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
