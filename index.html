@@ -19,414 +19,94 @@
             --orange: #f97316;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            background-color: #e5e5e5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden; /* Prevent body scroll */
-        }
-
-        /* Mobile Container */
-        .app-container {
-            width: 100%;
-            max-width: 390px;
-            height: 100vh; /* Full screen on mobile */
-            max-height: 844px;
-            background-color: var(--bg-gray);
-            border-radius: 0; /* Flat on mobile */
-            overflow: hidden;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-        @media (min-width: 400px) {
-            .app-container { height: 844px; border-radius: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-        }
-
-        /* Header */
-        header {
-            padding: 40px 20px 10px 20px;
-            background: var(--bg-gray);
-            z-index: 10;
-        }
-
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .header-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text-dark);
-        }
-
-        /* Scrollable Content Area */
-        .content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0 20px 100px 20px; /* Bottom padding for nav bar */
-            scrollbar-width: none;
-        }
-        .content::-webkit-scrollbar { display: none; }
-
-        /* --- COMPONENTS --- */
-
-        /* Cards */
-        .card {
-            background: var(--white);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-
-        /* Circular Progress (Home) */
-        .stats-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .stat-item { text-align: center; }
-        .stat-val { font-size: 18px; font-weight: 700; }
-        .stat-label { font-size: 10px; color: var(--text-gray); text-transform: uppercase; }
-
-        .circle-progress {
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            background: conic-gradient(var(--primary-green) 0% 78%, #e5e7eb 78% 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
-        .circle-inner {
-            width: 120px;
-            height: 120px;
-            background: var(--bg-gray);
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .percentage { font-size: 32px; font-weight: 800; color: var(--text-dark); }
-        .clean-label { font-size: 14px; color: var(--text-gray); font-weight: 600; }
-
-        /* Insight Card */
-        .insight-card {
-            background: var(--secondary-green);
-            padding: 15px;
-            border-radius: 16px;
-            display: flex;
-            align-items: flex-start;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .insight-icon { font-size: 20px; color: var(--primary-green); }
-        .insight-text h4 { font-size: 14px; margin-bottom: 4px; color: var(--text-dark); }
-        .insight-text p { font-size: 12px; color: var(--text-gray); line-height: 1.4; }
-
-        /* Macros */
-        .macro-row { margin-bottom: 12px; }
-        .macro-header { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; font-weight: 600;}
-        .macro-bar-bg { width: 100%; height: 6px; background: #e5e7eb; border-radius: 10px; overflow: hidden; }
-        .macro-bar-fill { height: 100%; border-radius: 10px; }
-        .bg-blue { background-color: var(--blue); }
-        .bg-orange { background-color: var(--orange); } 
-
-        /* Recent Scans / List Items */
-        .list-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #e5e5e5; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+        .app-container { width: 100%; max-width: 390px; height: 100vh; max-height: 844px; background-color: var(--bg-gray); overflow: hidden; position: relative; display: flex; flex-direction: column; }
+        @media (min-width: 400px) { .app-container { height: 844px; border-radius: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); } }
         
-        .scan-item {
-            display: flex;
-            align-items: center;
-            background: var(--white);
-            padding: 12px;
-            border-radius: 16px;
-            margin-bottom: 10px;
-        }
-        .scan-img {
-            width: 45px;
-            height: 45px;
-            border-radius: 8px;
-            background: #ddd;
-            object-fit: cover;
-            margin-right: 12px;
-        }
-        .scan-info { flex: 1; }
-        .scan-name { font-size: 14px; font-weight: 600; color: var(--text-dark); margin-bottom: 2px;}
-        .scan-time { font-size: 11px; color: var(--text-gray); }
-        .scan-badge {
-            font-size: 10px;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .badge-clean { background: var(--secondary-green); color: var(--primary-green); }
-        .badge-caution { background: #fef9c3; color: var(--caution); }
+        header { padding: 40px 20px 10px 20px; background: var(--bg-gray); z-index: 10; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header-title { font-size: 24px; font-weight: 700; color: var(--text-dark); }
+        .content { flex: 1; overflow-y: auto; padding: 0 20px 100px 20px; scrollbar-width: none; }
+        .content::-webkit-scrollbar { display: none; }
+        
+        /* UI Components */
+        .card { background: var(--white); border-radius: 20px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .stats-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .stat-item { text-align: center; } .stat-val { font-size: 18px; font-weight: 700; } .stat-label { font-size: 10px; color: var(--text-gray); text-transform: uppercase; }
+        .circle-progress { width: 140px; height: 140px; border-radius: 50%; background: conic-gradient(var(--primary-green) 0% 78%, #e5e7eb 78% 100%); display: flex; justify-content: center; align-items: center; position: relative; }
+        .circle-inner { width: 120px; height: 120px; background: var(--bg-gray); border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .percentage { font-size: 32px; font-weight: 800; color: var(--text-dark); } .clean-label { font-size: 14px; color: var(--text-gray); font-weight: 600; }
+        .insight-card { background: var(--secondary-green); padding: 15px; border-radius: 16px; display: flex; align-items: flex-start; gap: 15px; margin-bottom: 20px; }
+        .insight-icon { font-size: 20px; color: var(--primary-green); }
+        .insight-text h4 { font-size: 14px; margin-bottom: 4px; color: var(--text-dark); } .insight-text p { font-size: 12px; color: var(--text-gray); line-height: 1.4; }
+        .macro-row { margin-bottom: 12px; } .macro-header { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; font-weight: 600;}
+        .macro-bar-bg { width: 100%; height: 6px; background: #e5e7eb; border-radius: 10px; overflow: hidden; } .macro-bar-fill { height: 100%; border-radius: 10px; }
+        .bg-blue { background-color: var(--blue); } .bg-orange { background-color: var(--orange); } 
+        .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .scan-item { display: flex; align-items: center; background: var(--white); padding: 12px; border-radius: 16px; margin-bottom: 10px; }
+        .scan-img { width: 45px; height: 45px; border-radius: 8px; background: #ddd; object-fit: cover; margin-right: 12px; }
+        .scan-info { flex: 1; } .scan-name { font-size: 14px; font-weight: 600; color: var(--text-dark); margin-bottom: 2px;} .scan-time { font-size: 11px; color: var(--text-gray); }
+        .scan-badge { font-size: 10px; padding: 4px 8px; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+        .badge-clean { background: var(--secondary-green); color: var(--primary-green); } .badge-caution { background: #fef9c3; color: var(--caution); }
+        .streak-hero { background: var(--primary-green); color: white; padding: 25px; border-radius: 24px; text-align: center; margin-bottom: 20px; }
+        .fire-icon { font-size: 32px; margin-bottom: 10px; display: block; } .streak-count { font-size: 36px; font-weight: 800; }
+        .profile-header { text-align: center; margin-bottom: 25px; } .avatar { width: 80px; height: 80px; background: #86efac; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 30px; color: white; }
 
-        /* --- Streaks & Profile Styles --- */
-        .streak-hero {
-            background: var(--primary-green);
-            color: white;
-            padding: 25px;
-            border-radius: 24px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .fire-icon { font-size: 32px; margin-bottom: 10px; display: block; }
-        .streak-count { font-size: 36px; font-weight: 800; }
-        .profile-header { text-align: center; margin-bottom: 25px; }
-        .avatar {
-            width: 80px; height: 80px;
-            background: #86efac;
-            border-radius: 50%;
-            margin: 0 auto 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 30px; color: white;
-        }
-
-        /* --- Bottom Navigation --- */
-        .bottom-nav {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 85px;
-            background: var(--white);
-            display: flex;
-            justify-content: space-around;
-            align-items: flex-start;
-            padding-top: 15px;
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.03);
-            z-index: 100;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #9ca3af;
-            font-size: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 50px;
-        }
-        .nav-item i { font-size: 20px; margin-bottom: 5px; transition: color 0.2s; }
-        .nav-item.active { color: var(--primary-green); }
-
-        /* Floating Camera Button */
-        .nav-camera {
-            width: 60px;
-            height: 60px;
-            background: var(--primary-green);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 24px;
-            margin-top: -35px; /* Pull up */
-            box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
-            border: 4px solid var(--white);
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
+        /* Navigation */
+        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 85px; background: var(--white); display: flex; justify-content: space-around; align-items: flex-start; padding-top: 15px; box-shadow: 0 -10px 30px rgba(0,0,0,0.03); z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #9ca3af; font-size: 10px; font-weight: 600; cursor: pointer; width: 50px; }
+        .nav-item i { font-size: 20px; margin-bottom: 5px; transition: color 0.2s; } .nav-item.active { color: var(--primary-green); }
+        .nav-camera { width: 60px; height: 60px; background: var(--primary-green); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 24px; margin-top: -35px; box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3); border: 4px solid var(--white); cursor: pointer; transition: transform 0.1s; }
         .nav-camera:active { transform: scale(0.95); }
 
-
-        /* --- CAMERA OVERLAY (The Magic Part) --- */
-        #camera-view {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: #000;
-            z-index: 9999; /* Top of everything */
-            display: none; /* Hidden by default */
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #camera-view video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        /* Overlay UI on top of video */
-        .camera-overlay-ui {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            padding: 40px 20px;
-        }
-
-        .scan-box {
-            width: 250px; 
-            height: 250px; 
-            border: 2px solid rgba(255,255,255,0.8);
-            border-radius: 20px;
-            margin-top: 100px;
-            box-shadow: 0 0 0 9999px rgba(0,0,0,0.6); /* Dim surroundings */
-        }
-
-        .camera-controls {
-            pointer-events: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            width: 100%;
-            padding-bottom: 50px;
-        }
-
-        #camera-status {
-            color: white;
-            background: rgba(0,0,0,0.6);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            min-height: 24px;
-            text-align: center;
-        }
-
-        /* Snap Button */
-        #snap-action-btn {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: white;
-            border: 4px solid rgba(255,255,255,0.5);
-            cursor: pointer;
-            display: flex; 
-            justify-content: center; 
-            align-items: center;
-            transition: 0.2s;
-        }
+        /* Camera Overlay */
+        #camera-view { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; }
+        #camera-view video { width: 100%; height: 100%; object-fit: cover; }
+        .camera-overlay-ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 20px; }
+        .scan-box { width: 250px; height: 250px; border: 2px solid rgba(255,255,255,0.8); border-radius: 20px; margin-top: 100px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.6); }
+        .camera-controls { pointer-events: auto; display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; padding-bottom: 50px; }
+        #camera-status { color: white; background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 20px; font-size: 14px; min-height: 24px; text-align: center; }
+        #snap-action-btn { width: 80px; height: 80px; border-radius: 50%; background: white; border: 4px solid rgba(255,255,255,0.5); cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
         #snap-action-btn:active { transform: scale(0.9); }
         .snap-inner { width: 60px; height: 60px; background: var(--primary-green); border-radius: 50%; }
-
-        /* Close Button */
-        #close-camera-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            color: white;
-            font-size: 24px;
-            background: rgba(0,0,0,0.3);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            pointer-events: auto;
-            z-index: 10000;
-        }
-
-        /* Loading spinner */
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 4px solid var(--primary-green);
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            display: none;
-        }
+        #close-camera-btn { position: absolute; top: 20px; right: 20px; color: white; font-size: 24px; background: rgba(0,0,0,0.3); width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; pointer-events: auto; z-index: 10000; }
+        .spinner { border: 4px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top: 4px solid var(--primary-green); width: 30px; height: 30px; animation: spin 1s linear infinite; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    
     <header id="main-header">
         <div class="header-top">
             <h1 class="header-title" id="page-title">Today</h1>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
         </div>
         <div id="date-scroller" style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-gray); font-weight: 600;">
-            <div style="text-align: center;">Mon<br>15</div>
-            <div style="text-align: center;">Tue<br>16</div>
-            <div style="text-align: center;">Wed<br>17</div>
+            <div style="text-align: center;">Mon<br>15</div><div style="text-align: center;">Tue<br>16</div><div style="text-align: center;">Wed<br>17</div>
             <div style="text-align: center; color: var(--white); background: var(--primary-green); padding: 5px 10px; border-radius: 12px;">Thu<br>18</div>
-            <div style="text-align: center;">Fri<br>19</div>
-            <div style="text-align: center;">Sat<br>20</div>
-            <div style="text-align: center;">Sun<br>21</div>
+            <div style="text-align: center;">Fri<br>19</div><div style="text-align: center;">Sat<br>20</div><div style="text-align: center;">Sun<br>21</div>
         </div>
     </header>
 
-    <div class="content" id="content-area">
-        </div>
+    <div class="content" id="content-area"></div>
 
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('home')">
-            <i class="fa-solid fa-house"></i>
-            <span>Home</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('snaps')">
-            <i class="fa-solid fa-camera-retro"></i>
-            <span>Snaps</span>
-        </div>
-        
-        <div class="nav-camera" onclick="openCamera()">
-            <i class="fa-solid fa-camera"></i>
-        </div>
-
-        <div class="nav-item" onclick="switchTab('streaks')">
-            <i class="fa-solid fa-arrow-trend-up"></i>
-            <span>Streaks</span>
-        </div>
-        <div class="nav-item" onclick="switchTab('profile')">
-            <i class="fa-regular fa-user"></i>
-            <span>Profile</span>
-        </div>
+        <div class="nav-item active" onclick="switchTab('home')"><i class="fa-solid fa-house"></i><span>Home</span></div>
+        <div class="nav-item" onclick="switchTab('snaps')"><i class="fa-solid fa-camera-retro"></i><span>Snaps</span></div>
+        <div class="nav-camera" onclick="openCamera()"><i class="fa-solid fa-camera"></i></div>
+        <div class="nav-item" onclick="switchTab('streaks')"><i class="fa-solid fa-arrow-trend-up"></i><span>Streaks</span></div>
+        <div class="nav-item" onclick="switchTab('profile')"><i class="fa-regular fa-user"></i><span>Profile</span></div>
     </nav>
-
 </div>
 
 <div id="camera-view">
     <video id="camera-feed" autoplay playsinline muted></video>
     <canvas id="camera-canvas" style="display:none;"></canvas>
-    
     <div id="close-camera-btn" onclick="closeCamera()"><i class="fa-solid fa-xmark"></i></div>
-
     <div class="camera-overlay-ui">
         <div class="scan-box"></div>
-        
         <div class="camera-controls">
             <div id="camera-status">Point at food & snap</div>
             <button id="snap-action-btn" onclick="takePicture()">
@@ -443,40 +123,38 @@
      * =========================================
      */
     const API_KEY = "AIzaSyDGeKD4AEq7kLZGsilAhWHuQgpUv8BBIUs"; 
-    
-    // --- THIS IS THE CORRECTED URL THAT FIXES THE 404 ERROR ---
     const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
-    // Map Food Keywords to your AR links
+    // --- MAP KEYWORDS TO YOUR SPECIFIC AR LINKS HERE ---
     const AR_LINKS = {
-        "apple": "https://webxr.run/apple-link",
-        "burger": "https://webxr.run/burger-link",
-        "pizza": "https://webxr.run/pizza-link",
-        "salad": "https://webxr.run/salad-link",
-        "banana": "https://webxr.run/banana-link",
-        "default": "https://webxr.run/default-link"
+        // AI Keyword     :   Link to Open
+        
+        // 1. Protein Bar (Covering multiple AI guesses)
+        "bar":      "https://webxr.run/ker7JJ7XwzzRw",
+        "protein":  "https://webxr.run/ker7JJ7XwzzRw",
+        "wrapper":  "https://webxr.run/ker7JJ7XwzzRw",
+        "snack":    "https://webxr.run/ker7JJ7XwzzRw",
+        
+        // 2. Chips (Covering multiple AI guesses)
+        "chips":    "https://webxr.run/YOUR_CHIPS_LINK_HERE", // <--- PASTE CHIPS LINK
+        "bag":      "https://webxr.run/YOUR_CHIPS_LINK_HERE", // <--- PASTE CHIPS LINK
+        "doritos":  "https://webxr.run/YOUR_CHIPS_LINK_HERE", // <--- PASTE CHIPS LINK
+        
+        // 3. Others (Optional)
+        "apple":    "https://webxr.run/apple-link",
+        "default":  "https://webxr.run/default-link"
     };
-    /** ========================================= */
 
-    // --- 1. APP DATA (Tabs) ---
+    // --- APP CONTENT ---
     const data = {
         home: `
-            <div class="stats-container">
-                <div class="stat-item"><span class="stat-val">1450</span><br><span class="stat-label">Consumed</span></div>
-                <div class="circle-progress">
-                    <div class="circle-inner"><span class="percentage">78%</span><span class="clean-label">CLEAN</span></div>
-                </div>
-                <div class="stat-item"><span class="stat-val">320</span><br><span class="stat-label">Active</span></div>
-            </div>
-            <div class="insight-card">
-                <i class="fa-solid fa-wand-magic-sparkles insight-icon"></i>
-                <div class="insight-text"><h4>Today's Insight</h4><p>Mostly clean choices. Keep it up!</p></div>
-            </div>
-            <div class="card">
-                <h3 style="margin-bottom: 15px;">Macros</h3>
-                <div class="macro-row"><div class="macro-header"><span>Protein</span><span>68g</span></div><div class="macro-bar-bg"><div class="macro-bar-fill bg-blue" style="width: 56%"></div></div></div>
-                <div class="macro-row"><div class="macro-header"><span>Carbs</span><span>145g</span></div><div class="macro-bar-bg"><div class="macro-bar-fill bg-orange" style="width: 72%"></div></div></div>
-            </div>
+            <div class="stats-container"><div class="stat-item"><span class="stat-val">1450</span><br><span class="stat-label">Consumed</span></div>
+            <div class="circle-progress"><div class="circle-inner"><span class="percentage">78%</span><span class="clean-label">CLEAN</span></div></div>
+            <div class="stat-item"><span class="stat-val">320</span><br><span class="stat-label">Active</span></div></div>
+            <div class="insight-card"><i class="fa-solid fa-wand-magic-sparkles insight-icon"></i><div class="insight-text"><h4>Today's Insight</h4><p>Mostly clean choices. Keep it up!</p></div></div>
+            <div class="card"><h3 style="margin-bottom: 15px;">Macros</h3>
+            <div class="macro-row"><div class="macro-header"><span>Protein</span><span>68g</span></div><div class="macro-bar-bg"><div class="macro-bar-fill bg-blue" style="width: 56%"></div></div></div>
+            <div class="macro-row"><div class="macro-header"><span>Carbs</span><span>145g</span></div><div class="macro-bar-bg"><div class="macro-bar-fill bg-orange" style="width: 72%"></div></div></div></div>
             <div class="list-header"><h3>Recent Scans</h3></div>
             <div class="scan-item"><img src="https://images.unsplash.com/photo-1517618998059-4d640245b736?w=100" class="scan-img"><div class="scan-info"><div class="scan-name">Granola Bar</div><div class="scan-time">8:30 AM</div></div><div class="scan-badge badge-clean">Clean</div></div>
         `,
@@ -485,7 +163,6 @@
         profile: `<div class="profile-header"><div class="avatar">AJ</div><h2>Alex Johnson</h2></div><div class="card"><h4>Settings</h4><p>Vegetarian Mode: ON</p></div>`
     };
 
-    // --- 2. TAB SWITCHING LOGIC ---
     const contentArea = document.getElementById('content-area');
     const pageTitle = document.getElementById('page-title');
     const navItems = document.querySelectorAll('.nav-item');
@@ -493,19 +170,15 @@
     function switchTab(tabName) {
         contentArea.innerHTML = data[tabName];
         navItems.forEach(item => item.classList.remove('active'));
-        
         if(tabName === 'home') navItems[0].classList.add('active');
         if(tabName === 'snaps') navItems[1].classList.add('active');
         if(tabName === 'streaks') navItems[2].classList.add('active');
         if(tabName === 'profile') navItems[3].classList.add('active');
-
         pageTitle.innerText = tabName.charAt(0).toUpperCase() + tabName.slice(1);
     }
-    // Initialize
     switchTab('home');
 
-
-    // --- 3. CAMERA & AI LOGIC ---
+    // --- CAMERA LOGIC ---
     const cameraView = document.getElementById('camera-view');
     const video = document.getElementById('camera-feed');
     const canvas = document.getElementById('camera-canvas');
@@ -515,109 +188,65 @@
     const spinner = document.querySelector('.spinner');
     let stream = null;
 
-    // A. Open Camera Overlay
     async function openCamera() {
         cameraView.style.display = 'flex';
         try {
-            stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "environment" } 
-            });
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
             video.srcObject = stream;
-        } catch (err) {
-            statusText.innerText = "Camera Denied. Check settings.";
-        }
+        } catch (err) { statusText.innerText = "Camera Denied. Check settings."; console.error(err); }
     }
 
-    // B. Close Camera Overlay
     function closeCamera() {
         cameraView.style.display = 'none';
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            stream = null;
-        }
-        statusText.innerText = "Point at food & snap";
-        statusText.style.color = "white";
-        snapBtn.disabled = false;
-        snapInner.style.display = "block";
-        spinner.style.display = "none";
+        if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; }
+        statusText.innerText = "Point at food & snap"; statusText.style.color = "white";
+        snapBtn.disabled = false; snapInner.style.display = "block"; spinner.style.display = "none";
     }
 
-    // C. Take Picture & Call API
     async function takePicture() {
-        // 1. Update UI to Loading State
-        snapBtn.disabled = true;
-        snapInner.style.display = "none";
-        spinner.style.display = "block";
-        statusText.innerText = "Analyzing...";
-        statusText.style.color = "#22c55e"; // Green
+        snapBtn.disabled = true; snapInner.style.display = "none"; spinner.style.display = "block";
+        statusText.innerText = "Analyzing..."; statusText.style.color = "#22c55e"; 
 
-        // 2. Capture Frame
         const context = canvas.getContext('2d');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        // 3. Convert to Base64
         const base64Image = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
 
-        // 4. Send to Gemini
         try {
             const response = await fetch(`${API_URL}?key=${API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{
-                        parts: [
-                            { text: "Identify the main food item in this image. Return ONLY the one-word name in lowercase (e.g. 'burger', 'apple', 'pasta'). If not food, say 'unknown'." },
-                            { inline_data: { mime_type: "image/jpeg", data: base64Image } }
-                        ]
-                    }]
+                    contents: [{ parts: [{ text: "Identify the main food item. Return ONLY the one-word name in lowercase (e.g. 'burger', 'apple', 'pasta'). If not food, say 'unknown'.", inline_data: { mime_type: "image/jpeg", data: base64Image } }] }]
                 })
             });
 
-            // ERROR HANDLING
-            if (!response.ok) {
-                if(response.status === 404) throw new Error("404: Invalid URL");
-                if(response.status === 400) throw new Error("400: Bad Request (Key?)");
-                throw new Error(`API Error: ${response.status}`);
-            }
-
+            if (!response.ok) throw new Error(`API Error: ${response.status}`);
+            
             const data = await response.json();
-            let keyword = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            let keyword = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase();
 
             if (keyword) {
-                keyword = keyword.trim().toLowerCase().replace("\n", "");
-                
-                if (keyword === "unknown") {
-                    statusText.innerText = "Not food. Try again.";
-                    statusText.style.color = "red";
-                    resetBtn();
+                if(keyword === 'unknown') {
+                    statusText.innerText = "Not food. Try again."; statusText.style.color = "red"; resetBtn();
                 } else {
-                    // SUCCESS!
                     statusText.innerText = `Found: ${keyword.toUpperCase()}`;
-                    
-                    // Redirect Logic
-                    setTimeout(() => {
-                        const targetLink = AR_LINKS[keyword] || AR_LINKS["default"];
-                        window.location.href = targetLink;
+                    setTimeout(() => { 
+                        // Default to the protein bar link if the AI guesses a synonym for bar/chips
+                        const targetLink = AR_LINKS[keyword] || AR_LINKS["default"]; 
+                        window.location.href = targetLink; 
                     }, 1000);
                 }
-            } else {
-                throw new Error("No data returned");
-            }
+            } else { throw new Error("No text returned from AI"); }
 
         } catch (error) {
             console.error(error);
-            statusText.innerText = error.message;
-            statusText.style.color = "red";
-            resetBtn();
+            statusText.innerText = error.message; statusText.style.color = "red"; resetBtn();
         }
     }
 
     function resetBtn() {
-        snapBtn.disabled = false;
-        snapInner.style.display = "block";
-        spinner.style.display = "none";
+        snapBtn.disabled = false; snapInner.style.display = "block"; spinner.style.display = "none";
     }
 </script>
 
