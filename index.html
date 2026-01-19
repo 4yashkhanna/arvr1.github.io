@@ -82,13 +82,21 @@
         #close-camera-btn { position: absolute; top: 20px; right: 20px; color: white; font-size: 24px; background: rgba(0,0,0,0.3); width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; pointer-events: auto; z-index: 10000; }
         .spinner { border: 4px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top: 4px solid var(--primary-green); width: 30px; height: 30px; animation: spin 1s linear infinite; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .version-tag { font-size: 10px; color: var(--text-gray); margin-top: 5px; opacity: 0.7; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <header id="main-header">
-        <div class="header-top"><h1 class="header-title" id="page-title">Today</h1><i class="fa-regular fa-calendar" style="font-size: 20px;"></i></div>
+        <div class="header-top">
+            <div>
+                <h1 class="header-title" id="page-title">Today</h1>
+                <div class="version-tag">Health AR Scanner v2.0</div>
+            </div>
+            <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
+        </div>
         <div id="date-scroller" style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-gray); font-weight: 600;">
             <div style="text-align: center;">Mon<br>15</div><div style="text-align: center;">Tue<br>16</div><div style="text-align: center;">Wed<br>17</div>
             <div style="text-align: center; color: var(--white); background: var(--primary-green); padding: 5px 10px; border-radius: 12px;">Thu<br>18</div>
@@ -126,9 +134,10 @@
      * CONFIGURATION
      * =========================================
      */
-    // I added .trim() to your key to automatically remove any hidden spaces!
     const API_KEY = "AIzaSyDGeKD4AEq7kLZGsilAhWHuQgpUv8BBIUs".trim(); 
-    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+    
+    // UPDATED MODEL URL TO "LATEST" TO FIX 404 ERRORS
+    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
 
     // --- YOUR CUSTOM LINKS ARE HERE ---
     const AR_LINKS = {
@@ -211,7 +220,7 @@
         canvas.width = video.videoWidth; canvas.height = video.videoHeight;
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        // Convert to Base64 (Quality 0.6 to avoid payload too large errors)
+        // Convert to Base64 (Quality 0.6)
         const base64Image = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
 
         try {
@@ -229,11 +238,10 @@
             });
 
             if (!response.ok) {
-                // READ THE ERROR MESSAGE FROM GOOGLE
-                const errData = await response.json();
-                console.error("Full Error:", errData);
-                const msg = errData.error?.message || "Unknown API Error";
-                throw new Error(msg);
+                // HANDLE 404 OR 400 ERRORS SPECIFICALLY
+                if(response.status === 404) throw new Error("404: Model Name Invalid.");
+                if(response.status === 400) throw new Error("400: API Key or Image Invalid.");
+                throw new Error(`API Error: ${response.status}`);
             }
 
             const data = await response.json();
@@ -249,8 +257,7 @@
             } else { throw new Error("No text returned"); }
         } catch (error) {
             console.error(error); 
-            // SHOW THE REAL ERROR ON THE SCREEN
-            statusText.innerText = error.message.substring(0, 35) + "..."; 
+            statusText.innerText = error.message; 
             statusText.style.color = "red"; 
             resetBtn();
         }
