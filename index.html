@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Nutrition Tracker (Chocolate Added)</title>
+    <title>Nutrition Tracker (Gemini 2.5)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -105,7 +105,7 @@
         <div class="header-top">
             <div>
                 <h1 class="header-title" id="page-title">Today</h1>
-                <div class="version-tag">Health AR v10.2 (Stable 1.5)</div>
+                <div class="version-tag">Health AR v10.2 (Gemini 2.5)</div>
             </div>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
         </div>
@@ -155,16 +155,15 @@
 </div>
 
 <script>
-    // YOUR KEY
     const API_KEY = "AIzaSyDsiI1TOEl7YzhLz5w6rpG_i1rOzF4YfqM";
     
-    // MODEL: Gemini 1.5 Flash (Most stable for Free Tier)
-    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+    // UPDATED: 'gemini-2.5-flash' is the stable 2026 model
+    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
-    // UPDATED AR LINKS
+    // UPDATED LINKS WITH CHOCOLATE ADDED
     const AR_LINKS = {
         "protein bar": "https://webxr.run/lM6m6w8LA5QYw",
-        "chocolate": "https://webxr.run/eXDa7Ak116DOD", // ADDED CHOCOLATE HERE
+        "chocolate": "https://webxr.run/eXDa7Ak116DOD", // ADDED
         "granola bar": "https://webxr.run/lM6m6w8LA5QYw", 
         "bar": "https://webxr.run/lM6m6w8LA5QYw",
         "chips": "https://webxr.run/YOUR-CHIPS-LINK",
@@ -250,7 +249,7 @@
         if(isLocked) return;
         confirmIcon.style.display = 'none';
         spinner.style.display = 'block';
-        statusText.innerText = "Scanning...";
+        statusText.innerText = "Scanning 2.5...";
         statusText.style.color = "#22c55e";
 
         try {
@@ -314,7 +313,7 @@
         countdownText.style.display = 'block';
         confirmBtn.classList.add('disabled');
         
-        statusText.innerText = "Quota Limit Hit. Please wait.";
+        statusText.innerText = "Limit Hit. Please wait.";
         statusText.style.color = "#eab308"; // Yellow caution color
 
         let counter = seconds;
