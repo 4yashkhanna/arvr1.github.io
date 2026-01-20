@@ -155,7 +155,8 @@
 </div>
 
 <script>
-    const API_KEY = "AIzaSyDsiI1TOEl7YzhLz5w6rpG_i1rOzF4YfqM";
+    // UPDATED KEY
+    const API_KEY = "AIzaSyCReftHO5NSwiMc07YdSskhptq8MWmgGXU";
     
     // UPDATED: Using 'gemini-2.5-flash'
     const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
@@ -313,7 +314,7 @@
         countdownText.style.display = 'block';
         confirmBtn.classList.add('disabled');
         
-        statusText.innerText = "Quota Limit Hit. Please wait.";
+        statusText.innerText = "Limit Hit. Please wait.";
         statusText.style.color = "#eab308"; // Yellow caution color
 
         let counter = seconds;
