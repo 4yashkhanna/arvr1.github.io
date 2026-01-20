@@ -105,7 +105,7 @@
         <div class="header-top">
             <div>
                 <h1 class="header-title" id="page-title">Today</h1>
-                <div class="version-tag">Health AR v10.2 (Gemini 2.5)</div>
+                <div class="version-tag">Health AR v10.4 (2.5 Flash)</div>
             </div>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
         </div>
@@ -157,10 +157,10 @@
 <script>
     const API_KEY = "AIzaSyDsiI1TOEl7YzhLz5w6rpG_i1rOzF4YfqM";
     
-    // UPDATED: 'gemini-2.5-flash' is the stable 2026 model
+    // UPDATED: Using 'gemini-2.5-flash'
     const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
-    // UPDATED LINKS WITH CHOCOLATE ADDED
+    // UPDATED LINKS with Chocolate
     const AR_LINKS = {
         "protein bar": "https://webxr.run/lM6m6w8LA5QYw",
         "chocolate": "https://webxr.run/eXDa7Ak116DOD", // ADDED
@@ -313,7 +313,7 @@
         countdownText.style.display = 'block';
         confirmBtn.classList.add('disabled');
         
-        statusText.innerText = "Limit Hit. Please wait.";
+        statusText.innerText = "Quota Limit Hit. Please wait.";
         statusText.style.color = "#eab308"; // Yellow caution color
 
         let counter = seconds;
