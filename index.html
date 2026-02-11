@@ -71,7 +71,7 @@
 
         /* Camera Overlay */
         #camera-view { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; }
-        #camera-view video { width: 100%; height: 100%; object-fit: cover; }
+        #camera-feed { width: 100%; height: 100%; object-fit: cover; }
         #camera-canvas { width: 100%; height: 100%; object-fit: cover; display: none; } 
         
         .camera-overlay-ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 20px; }
@@ -155,22 +155,14 @@
 </div>
 
 <script>
-    // UPDATED KEY
     const API_KEY = "AIzaSyAmZi6diQJZ3FdIG8FVpqTtqzubBhtXxlA";
-    
-    // UPDATED: Using 'gemini-2.5-flash'
     const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
-    // UPDATED LINKS with Chocolate
+    // UPDATED AR LINKS
     const AR_LINKS = {
-        "protein bar": "https://webxr.run/lM6m6w8LA5QYw",
-        "chocolate": "https://webxr.run/eXDa7Ak116DOD", // ADDED
-        "granola bar": "https://webxr.run/lM6m6w8LA5QYw", 
-        "bar": "https://webxr.run/lM6m6w8LA5QYw",
-        "chips": "https://webxr.run/YOUR-CHIPS-LINK",
-        "potato chips": "https://webxr.run/YOUR-CHIPS-LINK",
-        "doritos": "https://webxr.run/YOUR-CHIPS-LINK",
-        "snack": "https://webxr.run/YOUR-CHIPS-LINK",
+        "chocolate": "https://webxr.run/k7w4YWLOonyZg",
+        "cake": "https://webxr.run/zdgoWdw3Wnnwz",
+        "popcorn": "https://webxr.run/og9A29XD7P403",
         "default": "https://webxr.run/default-link"
     };
 
@@ -178,7 +170,7 @@
         home: `<div class="stats-container"><div class="stat-item"><span class="stat-val">1450</span><br><span class="stat-label">Consumed</span></div><div class="circle-progress"><div class="circle-inner"><span class="percentage">78%</span><span class="clean-label">CLEAN</span></div></div><div class="stat-item"><span class="stat-val">320</span><br><span class="stat-label">Active</span></div></div><div class="insight-card"><i class="fa-solid fa-wand-magic-sparkles insight-icon"></i><div class="insight-text"><h4>Today's Insight</h4><p>Mostly clean choices. Keep it up!</p></div></div><div class="card"><h3 style="margin-bottom: 15px;">Macros</h3><div class="macro-row"><div class="macro-header"><span>Protein</span><span>68g</span></div><div class="macro-bar-bg"><div class="macro-bar-fill bg-blue" style="width: 56%"></div></div></div><div class="macro-row"><div class="macro-header"><span>Carbs</span><span>145g</span></div><div class="macro-bar-bg"><div class="macro-bar-fill bg-orange" style="width: 72%"></div></div></div></div><div class="list-header"><h3>Recent Scans</h3></div><div class="scan-item"><img src="https://images.unsplash.com/photo-1517618998059-4d640245b736?w=100" class="scan-img"><div class="scan-info"><div class="scan-name">Granola Bar</div><div class="scan-time">8:30 AM</div></div><div class="scan-badge badge-clean">Clean</div></div>`,
         snaps: `<h4 style="color:#6b7280; padding:20px 0;">Your Food History</h4><div style="text-align:center;">Snap more food to see history!</div>`,
         streaks: `<div class="streak-hero"><i class="fa-solid fa-fire fire-icon"></i><div class="streak-count">6-day</div><div>streak!</div></div>`,
-        profile: `<div class="profile-header"><div class="avatar">AJ</div><h2>Alex Johnson</h2></div><div class="card"><h4>Settings</h4><p>Vegetarian Mode: ON</p></div>`
+        profile: `<div class="profile-header"><div class="avatar">YK</div><h2>Yash Khanna</h2></div><div class="card"><h4>Settings</h4><p>Vegetarian Mode: OFF</p></div>`
     };
 
     const contentArea = document.getElementById('content-area');
@@ -262,7 +254,7 @@
                 body: JSON.stringify({
                     contents: [{ 
                         parts: [
-                            { text: "Identify the main food item. Return ONLY one lowercase word (e.g. 'protein bar', 'chips', 'chocolate'). If not food, say 'unknown'." }, 
+                            { text: "Classify the food in this image into one of these categories: 'chocolate', 'cake', or 'popcorn'. Return ONLY the lowercase word. If it is none of these, return 'unknown'." }, 
                             { inline_data: { mime_type: "image/jpeg", data: base64Image } }
                         ] 
                     }]
@@ -271,13 +263,10 @@
 
             if (!response.ok) {
                  const errData = await response.json();
-                 
-                 // Handle Rate Limit specifically
                  if(response.status === 429) {
-                     startCooldown(60); // 60 second cooldown
+                     startCooldown(60);
                      throw new Error("Speed Limit Reached");
                  }
-
                  throw new Error(errData.error?.message || "Status " + response.status);
             }
 
@@ -286,13 +275,13 @@
 
             if (keyword) {
                 if(keyword.includes('unknown') || keyword.length > 20) {
-                    statusText.innerText = "Not food. Try again."; 
+                    statusText.innerText = "Not found. Try again."; 
                     statusText.style.color = "#ef4444"; 
                     setTimeout(() => { resetUI(); }, 2000);
                 } else {
                     statusText.innerText = `Found: ${keyword.toUpperCase()}`;
                     const target = AR_LINKS[keyword] || AR_LINKS["default"];
-                    setTimeout(() => { window.location.href = target; }, 500);
+                    setTimeout(() => { window.location.href = target; }, 800);
                 }
             } else { throw new Error("AI returned nothing"); }
 
@@ -315,7 +304,7 @@
         confirmBtn.classList.add('disabled');
         
         statusText.innerText = "Limit Hit. Please wait.";
-        statusText.style.color = "#eab308"; // Yellow caution color
+        statusText.style.color = "#eab308";
 
         let counter = seconds;
         countdownText.innerText = counter + "s";
