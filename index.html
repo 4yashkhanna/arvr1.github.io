@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>InsideOut Nutrition Tracker</title>
+    <title>Nutrition Tracker (Gemini 2.5)</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -27,6 +27,7 @@
             min-height: 100vh; overflow: hidden;
         }
 
+        /* Mobile Container */
         .app-container {
             width: 100%; max-width: 390px; height: 100vh; max-height: 844px;
             background-color: var(--bg-gray); border-radius: 0; overflow: hidden;
@@ -34,6 +35,7 @@
         }
         @media (min-width: 400px) { .app-container { height: 844px; border-radius: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); } }
 
+        /* UI Styles */
         header { padding: 40px 20px 10px 20px; background: var(--bg-gray); z-index: 10; }
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .header-title { font-size: 24px; font-weight: 700; color: var(--text-dark); }
@@ -44,33 +46,56 @@
         .circle-progress { width: 140px; height: 140px; border-radius: 50%; background: conic-gradient(var(--primary-green) 0% 78%, #e5e7eb 78% 100%); display: flex; justify-content: center; align-items: center; position: relative; }
         .circle-inner { width: 120px; height: 120px; background: var(--bg-gray); border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .percentage { font-size: 32px; font-weight: 800; color: var(--text-dark); } .clean-label { font-size: 14px; color: var(--text-gray); font-weight: 600; }
+        .insight-card { background: var(--secondary-green); padding: 15px; border-radius: 16px; display: flex; align-items: flex-start; gap: 15px; margin-bottom: 20px; }
+        .insight-icon { font-size: 20px; color: var(--primary-green); }
+        .insight-text h4 { font-size: 14px; margin-bottom: 4px; color: var(--text-dark); } .insight-text p { font-size: 12px; color: var(--text-gray); line-height: 1.4; }
         .macro-row { margin-bottom: 12px; } .macro-header { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; font-weight: 600;}
         .macro-bar-bg { width: 100%; height: 6px; background: #e5e7eb; border-radius: 10px; overflow: hidden; } .macro-bar-fill { height: 100%; border-radius: 10px; }
         .bg-blue { background-color: var(--blue); } .bg-orange { background-color: var(--orange); } 
-        
+        .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .scan-item { display: flex; align-items: center; background: var(--white); padding: 12px; border-radius: 16px; margin-bottom: 10px; }
+        .scan-img { width: 45px; height: 45px; border-radius: 8px; background: #ddd; object-fit: cover; margin-right: 12px; }
+        .scan-info { flex: 1; } .scan-name { font-size: 14px; font-weight: 600; color: var(--text-dark); margin-bottom: 2px;} .scan-time { font-size: 11px; color: var(--text-gray); }
+        .scan-badge { font-size: 10px; padding: 4px 8px; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+        .badge-clean { background: var(--secondary-green); color: var(--primary-green); } .badge-caution { background: #fef9c3; color: var(--caution); }
+        .streak-hero { background: var(--primary-green); color: white; padding: 25px; border-radius: 24px; text-align: center; margin-bottom: 20px; }
+        .fire-icon { font-size: 32px; margin-bottom: 10px; display: block; } .streak-count { font-size: 36px; font-weight: 800; }
+        .profile-header { text-align: center; margin-bottom: 25px; } .avatar { width: 80px; height: 80px; background: #86efac; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 30px; color: white; }
+
+        /* Nav */
         .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 85px; background: var(--white); display: flex; justify-content: space-around; align-items: flex-start; padding-top: 15px; box-shadow: 0 -10px 30px rgba(0,0,0,0.03); z-index: 100; }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #9ca3af; font-size: 10px; font-weight: 600; cursor: pointer; width: 50px; }
-        .nav-item i { font-size: 20px; margin-bottom: 5px; } .nav-item.active { color: var(--primary-green); }
+        .nav-item i { font-size: 20px; margin-bottom: 5px; transition: color 0.2s; } .nav-item.active { color: var(--primary-green); }
         .nav-camera { width: 60px; height: 60px; background: var(--primary-green); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 24px; margin-top: -35px; box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3); border: 4px solid var(--white); cursor: pointer; transition: transform 0.1s; }
+        .nav-camera:active { transform: scale(0.95); }
 
+        /* Camera Overlay */
         #camera-view { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; }
         #camera-feed { width: 100%; height: 100%; object-fit: cover; }
         #camera-canvas { width: 100%; height: 100%; object-fit: cover; display: none; } 
+        
         .camera-overlay-ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 40px 20px; }
         .scan-box { width: 250px; height: 250px; border: 2px solid rgba(255,255,255,0.8); border-radius: 20px; margin-top: 100px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.6); }
         .camera-controls { pointer-events: auto; display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; padding-bottom: 50px; }
-        #camera-status { color: white; background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 20px; font-size: 14px; text-align: center; }
-        #snap-action-btn { width: 80px; height: 80px; border-radius: 50%; background: white; border: 4px solid rgba(255,255,255,0.5); cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        #camera-status { color: white; background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 20px; font-size: 14px; min-height: 24px; text-align: center; max-width: 80%; }
+        
+        /* Snap Button */
+        #snap-action-btn { width: 80px; height: 80px; border-radius: 50%; background: white; border: 4px solid rgba(255,255,255,0.5); cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
+        #snap-action-btn:active { transform: scale(0.9); }
         .snap-inner { width: 60px; height: 60px; background: var(--primary-green); border-radius: 50%; }
+
+        /* Review Buttons (Hidden by default) */
         #review-controls { display: none; flex-direction: row; gap: 40px; }
-        .review-btn { width: 70px; height: 70px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 24px; cursor: pointer; }
+        .review-btn { width: 70px; height: 70px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .btn-retake { background: #ef4444; }
         .btn-confirm { background: #22c55e; }
+        .btn-confirm:active, .btn-retake:active { transform: scale(0.95); }
         .btn-confirm.disabled { opacity: 0.5; pointer-events: none; background: #6b7280; }
-        #close-camera-btn { position: absolute; top: 20px; right: 20px; color: white; font-size: 24px; background: rgba(0,0,0,0.3); width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 10000; }
+
+        #close-camera-btn { position: absolute; top: 20px; right: 20px; color: white; font-size: 24px; background: rgba(0,0,0,0.3); width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; pointer-events: auto; z-index: 10000; }
         .spinner { border: 4px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top: 4px solid var(--white); width: 30px; height: 30px; animation: spin 1s linear infinite; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .version-tag { font-size: 10px; color: var(--text-gray); margin-top: 5px; font-weight: bold;}
+        .version-tag { font-size: 10px; color: var(--text-gray); margin-top: 5px; opacity: 0.7; font-weight: bold;}
     </style>
 </head>
 <body>
@@ -80,9 +105,14 @@
         <div class="header-top">
             <div>
                 <h1 class="header-title" id="page-title">Today</h1>
-                <div class="version-tag">Health AR v10.5 (2.5 Flash Optimized)</div>
+                <div class="version-tag">Health AR v10.4 (2.5 Flash)</div>
             </div>
             <i class="fa-regular fa-calendar" style="font-size: 20px;"></i>
+        </div>
+        <div id="date-scroller" style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-gray); font-weight: 600;">
+            <div style="text-align: center;">Mon<br>15</div><div style="text-align: center;">Tue<br>16</div><div style="text-align: center;">Wed<br>17</div>
+            <div style="text-align: center; color: var(--white); background: var(--primary-green); padding: 5px 10px; border-radius: 12px;">Thu<br>18</div>
+            <div style="text-align: center;">Fri<br>19</div><div style="text-align: center;">Sat<br>20</div><div style="text-align: center;">Sun<br>21</div>
         </div>
     </header>
     <div class="content" id="content-area"></div>
@@ -98,20 +128,28 @@
 <div id="camera-view">
     <video id="camera-feed" autoplay playsinline muted></video>
     <canvas id="camera-canvas"></canvas>
+    
     <div id="close-camera-btn" onclick="closeCamera()"><i class="fa-solid fa-xmark"></i></div>
     <div class="camera-overlay-ui">
         <div class="scan-box"></div>
         <div class="camera-controls">
             <div id="camera-status">Point at food & snap</div>
-            <button id="snap-action-btn" onclick="snapPhoto()"><div class="snap-inner"></div></button>
+            
+            <button id="snap-action-btn" onclick="snapPhoto()">
+                <div class="snap-inner"></div>
+            </button>
+
             <div id="review-controls">
-                <div class="review-btn btn-retake" onclick="retakePhoto()"><i class="fa-solid fa-rotate-left"></i></div>
+                <div class="review-btn btn-retake" onclick="retakePhoto()">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </div>
                 <div class="review-btn btn-confirm" id="confirm-btn" onclick="analyzePhoto()">
                     <i class="fa-solid fa-check" id="confirm-icon"></i>
                     <div class="spinner" id="analyze-spinner"></div>
-                    <span id="countdown-text" style="font-size: 14px; display: none;"></span>
+                    <span id="countdown-text" style="font-size: 10px; display: none;"></span>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
@@ -120,6 +158,7 @@
     const API_KEY = "AIzaSyAmZi6diQJZ3FdIG8FVpqTtqzubBhtXxlA";
     const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
+    // UPDATED AR LINKS
     const AR_LINKS = {
         "chocolate": "https://webxr.run/k7w4YWLOonyZg",
         "cake": "https://webxr.run/zdgoWdw3Wnnwz",
@@ -128,116 +167,175 @@
     };
 
     const data = {
-        home: `<div class="stats-container"><div class="stat-item"><span class="stat-val">1450</span><br><span class="stat-label">Consumed</span></div><div class="circle-progress"><div class="circle-inner"><span class="percentage">78%</span><span class="clean-label">CLEAN</span></div></div><div class="stat-item"><span class="stat-val">320</span><br><span class="stat-label">Active</span></div></div><div class="card"><h3 style="margin-bottom: 15px;">Macros</h3><div class="macro-row"><div class="macro-header"><span>Protein</span><span>68g</span></div><div class="macro-bar-bg"><div class="macro-bar-fill bg-blue" style="width: 56%"></div></div></div></div>`,
-        snaps: `<h4 style="color:#6b7280; padding:20px 0;">Your Food History</h4>`,
-        streaks: `<div style="text-align:center; padding:50px;">6-day streak! 🔥</div>`,
-        profile: `<div style="text-align:center; padding:50px;"><h2>Yash Khanna</h2><p>FLAME University</p></div>`
+        home: `<div class="stats-container"><div class="stat-item"><span class="stat-val">1450</span><br><span class="stat-label">Consumed</span></div><div class="circle-progress"><div class="circle-inner"><span class="percentage">78%</span><span class="clean-label">CLEAN</span></div></div><div class="stat-item"><span class="stat-val">320</span><br><span class="stat-label">Active</span></div></div><div class="insight-card"><i class="fa-solid fa-wand-magic-sparkles insight-icon"></i><div class="insight-text"><h4>Today's Insight</h4><p>Mostly clean choices. Keep it up!</p></div></div><div class="card"><h3 style="margin-bottom: 15px;">Macros</h3><div class="macro-row"><div class="macro-header"><span>Protein</span><span>68g</span></div><div class="macro-bar-bg"><div class="macro-bar-fill bg-blue" style="width: 56%"></div></div></div><div class="macro-row"><div class="macro-header"><span>Carbs</span><span>145g</span></div><div class="macro-bar-bg"><div class="macro-bar-fill bg-orange" style="width: 72%"></div></div></div></div><div class="list-header"><h3>Recent Scans</h3></div><div class="scan-item"><img src="https://images.unsplash.com/photo-1517618998059-4d640245b736?w=100" class="scan-img"><div class="scan-info"><div class="scan-name">Granola Bar</div><div class="scan-time">8:30 AM</div></div><div class="scan-badge badge-clean">Clean</div></div>`,
+        snaps: `<h4 style="color:#6b7280; padding:20px 0;">Your Food History</h4><div style="text-align:center;">Snap more food to see history!</div>`,
+        streaks: `<div class="streak-hero"><i class="fa-solid fa-fire fire-icon"></i><div class="streak-count">6-day</div><div>streak!</div></div>`,
+        profile: `<div class="profile-header"><div class="avatar">YK</div><h2>Yash Khanna</h2></div><div class="card"><h4>Settings</h4><p>Vegetarian Mode: OFF</p></div>`
     };
 
+    const contentArea = document.getElementById('content-area');
+    const pageTitle = document.getElementById('page-title');
+    const navItems = document.querySelectorAll('.nav-item');
+    
     function switchTab(tabName) {
-        document.getElementById('content-area').innerHTML = data[tabName];
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        document.getElementById('page-title').innerText = tabName.charAt(0).toUpperCase() + tabName.slice(1);
+        contentArea.innerHTML = data[tabName];
+        navItems.forEach(item => item.classList.remove('active'));
+        if(tabName === 'home') navItems[0].classList.add('active');
+        if(tabName === 'snaps') navItems[1].classList.add('active');
+        if(tabName === 'streaks') navItems[2].classList.add('active');
+        if(tabName === 'profile') navItems[3].classList.add('active');
+        pageTitle.innerText = tabName.charAt(0).toUpperCase() + tabName.slice(1);
     }
     switchTab('home');
 
+    // Camera Variables
+    const cameraView = document.getElementById('camera-view');
     const video = document.getElementById('camera-feed');
     const canvas = document.getElementById('camera-canvas');
     const statusText = document.getElementById('camera-status');
     const snapBtn = document.getElementById('snap-action-btn');
     const reviewControls = document.getElementById('review-controls');
     const confirmBtn = document.getElementById('confirm-btn');
-    const spinner = document.getElementById('analyze-spinner');
     const confirmIcon = document.getElementById('confirm-icon');
+    const spinner = document.getElementById('analyze-spinner');
     const countdownText = document.getElementById('countdown-text');
     let stream = null;
     let isLocked = false;
 
     async function openCamera() {
-        document.getElementById('camera-view').style.display = 'flex';
+        cameraView.style.display = 'flex';
+        resetUI();
         try { 
             stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); 
             video.srcObject = stream; 
-        } catch (err) { statusText.innerText = "Camera Denied."; }
+        } 
+        catch (err) { statusText.innerText = "Camera Denied."; }
     }
 
     function closeCamera() {
-        document.getElementById('camera-view').style.display = 'none';
-        if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+        cameraView.style.display = 'none';
+        if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; }
     }
 
     function snapPhoto() {
-        const ctx = canvas.getContext('2d');
-        canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0);
-        video.style.display = 'none'; canvas.style.display = 'block';
-        snapBtn.style.display = 'none'; reviewControls.style.display = 'flex';
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth; 
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        video.style.display = 'none';
+        canvas.style.display = 'block';
+        statusText.innerText = "Analyze this?";
+        snapBtn.style.display = 'none';
+        reviewControls.style.display = 'flex';
     }
 
     function retakePhoto() {
         if(isLocked) return;
-        video.style.display = 'block'; canvas.style.display = 'none';
-        snapBtn.style.display = 'flex'; reviewControls.style.display = 'none';
+        video.style.display = 'block';
+        canvas.style.display = 'none';
+        statusText.innerText = "Point at food & snap";
+        snapBtn.style.display = 'flex';
+        reviewControls.style.display = 'none';
     }
 
     async function analyzePhoto() {
         if(isLocked) return;
-        confirmIcon.style.display = 'none'; spinner.style.display = 'block';
-        statusText.innerText = "Scanning...";
+        confirmIcon.style.display = 'none';
+        spinner.style.display = 'block';
+        statusText.innerText = "Scanning 2.5...";
+        statusText.style.color = "#22c55e";
 
         try {
-            // Optimized: Lowered quality to 0.3 to save tokens
-            const base64Image = canvas.toDataURL('image/jpeg', 0.3).split(',')[1];
+            const base64Image = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
+
             const response = await fetch(`${API_URL}?key=${API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [
-                        { text: "Output ONLY one word from this list: chocolate, cake, popcorn. If none, output unknown." }, 
-                        { inline_data: { mime_type: "image/jpeg", data: base64Image } }
-                    ]}]
+                    contents: [{ 
+                        parts: [
+                            { text: "Classify the food in this image into one of these categories: 'chocolate', 'cake', or 'popcorn'. Return ONLY the lowercase word. If it is none of these, return 'unknown'." }, 
+                            { inline_data: { mime_type: "image/jpeg", data: base64Image } }
+                        ] 
+                    }]
                 })
             });
 
-            if (response.status === 429) { startCooldown(30); throw new Error("Limit Hit"); }
-            
-            const result = await response.json();
-            const keyword = result.candidates[0].content.parts[0].text.trim().toLowerCase();
-
-            if (AR_LINKS[keyword]) {
-                statusText.innerText = `Matched: ${keyword.toUpperCase()}`;
-                setTimeout(() => window.location.href = AR_LINKS[keyword], 500);
-            } else {
-                statusText.innerText = "Not recognized. Try again.";
-                setTimeout(resetUI, 2000);
+            if (!response.ok) {
+                 const errData = await response.json();
+                 if(response.status === 429) {
+                     startCooldown(60);
+                     throw new Error("Speed Limit Reached");
+                 }
+                 throw new Error(errData.error?.message || "Status " + response.status);
             }
-        } catch (e) {
-            if(e.message !== "Limit Hit") { statusText.innerText = "Error. Resetting..."; setTimeout(resetUI, 2000); }
+
+            const data = await response.json();
+            let keyword = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toLowerCase();
+
+            if (keyword) {
+                if(keyword.includes('unknown') || keyword.length > 20) {
+                    statusText.innerText = "Not found. Try again."; 
+                    statusText.style.color = "#ef4444"; 
+                    setTimeout(() => { resetUI(); }, 2000);
+                } else {
+                    statusText.innerText = `Found: ${keyword.toUpperCase()}`;
+                    const target = AR_LINKS[keyword] || AR_LINKS["default"];
+                    setTimeout(() => { window.location.href = target; }, 800);
+                }
+            } else { throw new Error("AI returned nothing"); }
+
+        } catch (error) {
+            console.error(error);
+            if(error.message !== "Speed Limit Reached") {
+                statusText.innerText = "Error: " + error.message; 
+                statusText.style.color = "#ef4444";
+                statusText.style.fontSize = "12px";
+                setTimeout(() => { resetUI(); }, 4000);
+            }
         }
     }
 
-    function startCooldown(sec) {
+    function startCooldown(seconds) {
         isLocked = true;
         spinner.style.display = 'none';
+        confirmIcon.style.display = 'none';
         countdownText.style.display = 'block';
         confirmBtn.classList.add('disabled');
-        let count = sec;
-        const timer = setInterval(() => {
-            count--;
-            countdownText.innerText = count + "s";
-            statusText.innerText = "API Resting... " + count + "s";
-            if(count <= 0) { clearInterval(timer); isLocked = false; resetUI(); }
+        
+        statusText.innerText = "Limit Hit. Please wait.";
+        statusText.style.color = "#eab308";
+
+        let counter = seconds;
+        countdownText.innerText = counter + "s";
+
+        const interval = setInterval(() => {
+            counter--;
+            countdownText.innerText = counter + "s";
+            if(counter <= 0) {
+                clearInterval(interval);
+                resetUI();
+                isLocked = false;
+                confirmBtn.classList.remove('disabled');
+                countdownText.style.display = 'none';
+                confirmIcon.style.display = 'block';
+            }
         }, 1000);
     }
 
     function resetUI() {
         if(isLocked) return;
-        video.style.display = 'block'; canvas.style.display = 'none';
-        snapBtn.style.display = 'flex'; reviewControls.style.display = 'none';
-        confirmIcon.style.display = 'block'; spinner.style.display = 'none';
-        countdownText.style.display = 'none'; confirmBtn.classList.remove('disabled');
+        video.style.display = 'block';
+        canvas.style.display = 'none';
         statusText.innerText = "Point at food & snap";
+        statusText.style.color = "white";
+        statusText.style.fontSize = "14px";
+        snapBtn.style.display = 'flex';
+        reviewControls.style.display = 'none';
+        confirmIcon.style.display = 'block';
+        spinner.style.display = 'none';
     }
 </script>
+
 </body>
 </html>
